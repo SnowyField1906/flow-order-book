@@ -3,6 +3,12 @@ pub contract SimpleMarket {
     pub var offers: @{UFix64: Offer}
     pub var users: @{Address: User}
 
+    init() {
+        self.offers <- {}
+        self.users <- {}
+    }
+
+
     pub resource Offer {
 
         pub      let payToken : String
@@ -28,7 +34,6 @@ pub contract SimpleMarket {
         pub fun made(_ id: UFix64)
         pub fun increaseBalance(_ amount: UFix64)
         pub fun decreaseBalance(_ amount: UFix64)
-        pub fun getMade(): [UFix64]
     }
 
 
@@ -60,32 +65,18 @@ pub contract SimpleMarket {
         pub fun decreaseBalance(_ amount: UFix64) {
             self.balance = self.balance - amount
         }
-
-        pub fun getMade(): [UFix64] {
-            return self.ownedMake
-        }
-
-        pub fun getTaken(): [UFix64] {
-            return self.ownedTake
-        }
     }
 
-    pub fun makeOffer(_ payToken: String, _ payAmount: UFix64, _ buyToken: String, _ buyAmount: UFix64): UFix64 {
+    pub fun makeOffer(_ payToken: String, _ payAmount: UFix64, _ buyToken: String, _ buyAmount: UFix64): &Offer? {
         let id = getCurrentBlock().timestamp
         var newOffer: @Offer <- create Offer(payToken, payAmount, buyToken, buyAmount)
         self.offers[id] <-! newOffer
 
-        return id
+        return &self.offers[id] as &Offer? 
     }
 
     pub fun createUser(): @User {
         return <- create User()
     }
-
-    init() {
-        self.offers <- {}
-        self.users <- {}
-
-    }
+    
 }
- 
