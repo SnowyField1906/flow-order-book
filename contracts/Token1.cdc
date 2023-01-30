@@ -1,4 +1,4 @@
-pub contract SimpleToken {
+pub contract Token1 {
 
     pub var totalSupply: UFix64
 
@@ -54,7 +54,7 @@ pub contract SimpleToken {
             let recipientRef = recipient.borrow()
                 ?? panic("Could not borrow a receiver reference to the vault")
 
-            SimpleToken.totalSupply = SimpleToken.totalSupply + UFix64(amount)
+            Token1.totalSupply = Token1.totalSupply + UFix64(amount)
             recipientRef.deposit(from: <-create Vault(balance: amount))
         }
     }
@@ -63,11 +63,11 @@ pub contract SimpleToken {
         self.totalSupply = 100.0
 
         let vault <- create Vault(balance: self.totalSupply)
-        self.account.save(<-vault, to: /storage/Vault)
+        self.account.save(<-vault, to: /storage/Vault1)
 
-        self.account.save(<-create VaultMinter(), to: /storage/Minter)
+        self.account.save(<-create VaultMinter(), to: /storage/Minter1)
 
-        self.account.link<&VaultMinter>(/private/Minter, target: /storage/Minter)
+        self.account.link<&VaultMinter>(/private/Minter, target: /storage/Minter1)
     }
 }
 
