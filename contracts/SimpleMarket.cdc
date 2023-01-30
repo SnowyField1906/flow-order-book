@@ -1,5 +1,5 @@
-import Token1 from 0x04
-import Token2 from 0x05
+import Token0 from 0x02
+import Token1 from 0x03
 
 pub contract SimpleMarket {
 
