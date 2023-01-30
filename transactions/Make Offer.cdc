@@ -1,25 +1,18 @@
-import SimpleMarket from 0x1
+import SimpleMarket from 0x01
 
 transaction(_ payToken: String, _ payAmount: UFix64, _ buyToken: String, _ buyAmount: UFix64) {
 
     let userRef: &SimpleMarket.User
 
-    let marketRef: &SimpleMarket.Market
+    prepare(acct: AuthAccount) {
+    
+        self.userRef = acct.borrow<&SimpleMarket.User>(from: /storage/User)
+        ?? panic("Could not borrow user reference")
 
-    prepare(signer: AuthAccount) {
-            
-            self.userRef = signer.borrow<&SimpleMarket.User>(from: /storage/user)
-    
-                ?? panic("Could not borrow reference to the Users collection")
-    
-            self.marketRef = signer.borrow<&SimpleMarket.Market>(from: /storage/market)
-    
-                ?? panic("Could not borrow reference to the Market collection")
-    
-        }
+    }
 
     execute {
-        let offerID = self.marketRef.makeOffer(payToken, payAmount, buyToken, buyAmount)
+        let offerID = SimpleMarket.makeOffer(payToken, payAmount, buyToken, buyAmount)
         self.userRef.made(offerID)
     }
 }
