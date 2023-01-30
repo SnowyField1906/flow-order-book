@@ -14,16 +14,18 @@ pub contract SimpleMarket {
 
     pub resource Offer {
 
-        pub      let payToken : Address
-        pub(set) var payAmount: UFix64
-        pub      let buyToken : Address
-        pub(set) var buyAmount: UFix64
+        pub      let payToken  : Address
+        pub(set) var payAmount : UFix64
+        pub      let buyToken  : Address
+        pub(set) var buyAmount : UFix64
+        pub      let maker     : Address
 
-        init(_ payTokenID: Address, _ payAmount: UFix64, _ buyTokenID: Address, _ buyAmount: UFix64) {
-            self.payToken  = payTokenID
-            self.payAmount = payAmount
-            self.buyToken  = buyTokenID
-            self.buyAmount = buyAmount
+        init(_ maker: Address, _ payToken: Address, _ payAmount: UFix64, _ buyToken: Address, _ buyAmount: UFix64) {
+            self.payToken   = payToken
+            self.payAmount  = payAmount
+            self.buyToken   = buyToken
+            self.buyAmount  = buyAmount
+            self.maker      = maker
         }
     }
 
@@ -34,8 +36,8 @@ pub contract SimpleMarket {
         pub var ownedTake: [UFix64]
         pub var ownedMake: [UFix64]
 
-        pub fun taken(_ id: UFix64, _ offer: &Offer)
-        pub fun made(_ id: UFix64, _ offer: &Offer)
+        pub fun taken(_ id: UFix64)
+        pub fun made(_ id: UFix64)
     }
 
 
@@ -54,19 +56,18 @@ pub contract SimpleMarket {
             self.ownedMake = []
         }
 
-        pub fun taken(_ id: UFix64, _ offer: &Offer) {
+        pub fun taken(_ id: UFix64) {
             self.ownedTake.append(id)
-            self.balance0 = self.balance0 + offer.buyAmount
         }
 
-        pub fun made(_ id: UFix64, _ offer: &Offer) {
+        pub fun made(_ id: UFix64) {
             self.ownedMake.append(id)
         }
     }
 
-    pub fun makeOffer(_ payTokenID: Address, _ payAmount: UFix64, _ buyTokenID: Address, _ buyAmount: UFix64): &Offer? {
+    pub fun makeOffer(_ maker: Address, _ payToken: Address, _ payAmount: UFix64, _ buyToken: Address, _ buyAmount: UFix64): &Offer? {
         let id = getCurrentBlock().timestamp
-        var newOffer: @Offer <- create Offer(payTokenID, payAmount, buyTokenID, buyAmount)
+        var newOffer: @Offer <- create Offer(maker, payToken, payAmount, buyToken, buyAmount)
         self.offers[id] <-! newOffer
 
         return &self.offers[id] as &Offer? 
@@ -75,5 +76,4 @@ pub contract SimpleMarket {
     pub fun createUser(): @User {
         return <- create User()
     }
-    
 }

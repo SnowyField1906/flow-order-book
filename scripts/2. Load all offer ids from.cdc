@@ -8,5 +8,5 @@ pub fun main(address: Address) : [UFix64] {
     let userReference = userCapablity.borrow()
         ?? panic("Could not borrow a reference to the User capability")
     
-    return userReference.getMade()
+    return userReference.ownedMake
 }
