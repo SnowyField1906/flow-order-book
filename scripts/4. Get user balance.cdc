@@ -13,3 +13,4 @@ pub fun main(user: Address) : [UFix64] {
 
     return [userRef0.balance, userRef1.balance]
 }
+ 
