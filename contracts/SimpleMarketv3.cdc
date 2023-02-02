@@ -2,11 +2,11 @@
 
 pub contract SimpleMarketv3 {
 
-    pub var current: Node
+    pub var current: Node?
     pub var offers: @{UInt32: Offer}
 
     init() {
-        self.current = Node(0)
+        self.current = nil
         self.offers <- {}
     }
 
@@ -33,7 +33,13 @@ pub contract SimpleMarketv3 {
         let newOffer: @Offer <- create Offer(maker, payToken, payAmount, buyToken, buyAmount)
         
         self.offers[id] <-! newOffer
-        self.insertNode(id)
+
+        if self.current == nil {
+            self.current = Node(id)
+        }
+        else {
+            self.insertNode(id)
+        }
 
         return &self.offers[id] as &Offer? 
     }
@@ -42,53 +48,101 @@ pub contract SimpleMarketv3 {
 
     pub struct Node {
         pub(set) var key  : UInt32
-        pub(set) var left : Node
-        pub(set) var right: Node
+        pub(set) var left : Node?
+        pub(set) var right: Node?
 
         init(_ key: UInt32) {
             self.key = key
-            self.left = Node(0)
-            self.right = Node(0)
+            self.left = nil
+            self.right = nil
         }
     }
 
+    pub fun comparePrice(_ a: UInt32, _ b: UInt32): Int16 {
+        let offer0 = &self.offers[a] as &Offer?
+        let offer1 = &self.offers[b] as &Offer?
+
+        log("comparing: ".concat(a.toString()).concat(" and ").concat(b.toString()))
+
+        if offer0 == nil || offer1 == nil {
+            log("offer is nil")
+            return -2
+        }
+
+        if offer0!.payAmount / offer0!.buyAmount > offer1!.payAmount / offer1!.buyAmount {
+            log((offer0!.payAmount / offer0!.buyAmount).toString().concat(" and ").concat((offer1!.payAmount / offer1!.buyAmount).toString().concat(" (bigger)")))
+            return 1
+        }
+        else if offer0!.payAmount / offer0!.buyAmount < offer1!.payAmount / offer1!.buyAmount {
+            log((offer0!.payAmount / offer0!.buyAmount).toString().concat(" and ").concat((offer1!.payAmount / offer1!.buyAmount).toString().concat(" (smaller)")))
+            return -1
+        }
+        else {
+            log((offer0!.payAmount / offer0!.buyAmount).toString().concat(" and ").concat((offer1!.payAmount / offer1!.buyAmount).toString().concat(" (equal)")))
+            return 0
+        }
+    }
 
     pub fun insertNode(_ key: UInt32) {
-        var root: Node = self.current
+        log("inserting node: ".concat(key.toString()))
+
+        var root: Node? = self.current
         var newNode: Node = Node(key)
 
-        if key < root.key {
-            while root.key < key {
-                root = root.left
+        if self.comparePrice(key, root?.key!) == -1 {
+            root = root?.left
+            log("looping to left")
+            while root != nil && self.comparePrice(key, root?.key!) == -1 {
+                root = root?.left
             }
-            newNode.left = root.left
+            log("assign node")
+            newNode.left = root?.left
             newNode.right = root
+            root.left = newNode
         }
-        else if key > root.key {
-            while root.key > key {
-                root = root.right
+        else if self.comparePrice(key, root?.key!) == 1 {
+            root = root?.right
+            log("looping to right")
+            while root != nil && self.comparePrice(key, root?.key!) == 1 {
+                root = root?.right
             }
+            log("assign node")
             newNode.left = root
-            newNode.right = root.right
+            newNode.right = root?.right
+            root.right = newNode
         }
+
+        self.current = root
     }
 
-    pub fun deleteNode(_ root: Node, _ key: UInt32): Bool {
-        var root: Node = self.current
+    // pub fun deleteNode(_ root: Node, _ key: UInt32): Bool {
+    //     var root: Node = self.current!
 
-        while root.key < key {
-            root = root.left
-        }
-        while root.key > key {
-            root = root.right
-        }
+    //     while root.key < key {
+    //         root = root.left!
+    //     }
+    //     while root.key > key {
+    //         root = root.right!
+    //     }
 
-        if root.key == key {
-            root.left.right = root.right
-            root.right.left = root.left
-            return true
+    //     if root.key == key {
+    //         root.left.right = root.right
+    //         root.right.left = root.left
+    //         return true
+    //     }
+    //     return false
+    // }
+
+    pub fun inorderTraversal(_ ids: [UInt32], _ root: Node?) {
+        if root?.left != nil {
+            self.inorderTraversal(ids, root?.left!)
         }
-        return false
+        let offer = &self.offers[root!.key] as &Offer?
+        log(root!.key.toString().concat(": ").concat((offer!.payAmount / offer!.buyAmount).toString()))
+        ids.append(root!.key)
+        if root?.right != nil {
+            self.inorderTraversal(ids, root?.right!)
+        }
     }
 }
  
