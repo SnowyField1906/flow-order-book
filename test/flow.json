@@ -9,9 +9,6 @@
     "emulator-account": {
       "address": "f8d6e0586b0a20c7",
       "key": "d14037c64e056757082adab4b51cb10eb05b3749c2cdc82ceac3ac50e801123b"
-    },
-    "snowyfield": {
-      "fromFile": "snowyfield.private.json"
     }
   },
   "emulators": {

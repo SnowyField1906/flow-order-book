@@ -1,6 +1,6 @@
 // import BinarySearchOffers from 0x9d380238fdd484d7
 
-pub contract SimpleMarketv3 {
+pub contract SimpleMarket {
 
     pub var current: Node?
     pub var offers: @{UInt32: Offer}
@@ -84,7 +84,7 @@ pub contract SimpleMarketv3 {
     }
 
     pub fun insertNode(_ key: UInt32) {
-        log("inserting node: ".concat(key.toString()))
+        log("starting to insert node: ".concat(key.toString()))
 
         var root: Node? = self.current
         var newNode: Node = Node(key)
@@ -98,7 +98,8 @@ pub contract SimpleMarketv3 {
             log("assign node")
             newNode.left = root?.left
             newNode.right = root
-            root.left = newNode
+            root?.left = newNode
+            
         }
         else if self.comparePrice(key, root?.key!) == 1 {
             root = root?.right
@@ -109,10 +110,12 @@ pub contract SimpleMarketv3 {
             log("assign node")
             newNode.left = root
             newNode.right = root?.right
-            root.right = newNode
+            root?.right = newNode
         }
 
         self.current = root
+
+        log("finished inserting node: ".concat(key.toString()))
     }
 
     // pub fun deleteNode(_ root: Node, _ key: UInt32): Bool {
