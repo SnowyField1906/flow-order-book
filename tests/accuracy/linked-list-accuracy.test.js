@@ -1,31 +1,18 @@
 import path from "path"
-import { init, emulator, getAccountAddress, deployContractByName, getContractAddress, getContractCode, getTransactionCode, sendTransaction, shallPass } from "@onflow/flow-js-testing";
+import { init, emulator, getAccountAddress, getContractAddress, getTransactionCode, sendTransaction, shallPass } from "@onflow/flow-js-testing";
 
-async function deployContract(param) {
-    const [result, error] = await deployContractByName(param);
-    if (error != null) {
-        console.log(`Error in deployment - ${error}`);
-        emulator.stop();
-        process.exit(1);
-    }
-}
-
-describe("2. Make offer", () => {
+describe("1. Make offer", () => {
     let serviceAccount;
     let txTemplate;
     let contractName = "SimpleMarket"
-    let txName = "2. Make offer"
+    let txName = "1. Make offer"
 
     beforeEach(async () => {
-
         const basePath = path.resolve(__dirname, "./../");
         const logging = false;
 
         await init(basePath);
         await emulator.start({ logging });
-
-        serviceAccount = await getAccountAddress("ServiceAccount");
-        await deployContract({ to: serviceAccount, name: contractName })
     });
 
     test("Should get template code", async () => {
@@ -36,7 +23,7 @@ describe("2. Make offer", () => {
             name: txName,
             addressMap,
         })
-        expect(txTemplate).not.toBeNull()
+        expect(txTemplate).toBeDefined()
     });
 
     test("Should send transaction", async () => {
@@ -44,13 +31,22 @@ describe("2. Make offer", () => {
         const Bob = await getAccountAddress("Bob")
 
         const signers = [Alice, Bob]
-        const args = [serviceAccount, 0x02, 1, 0x03, 2]
+        const args = [serviceAccount, "0x02", "1", "0x03", "2"]
 
         const [txInlineResult] = await shallPass(
-            sendTransaction({ "code": txTemplate, signers, args })
+            sendTransaction(
+                {
+                    "code": txTemplate,
+                    "signers": signers,
+                    "args": args
+                })
         )
         const [txFileResult, , fileLogs] = await shallPass(
-            sendTransaction({ "name": txName, signers, args })
+            sendTransaction({
+                "name": txName,
+                "signers": signers,
+                "args": args
+            })
         )
         const [txShortResult, , inlineLogs] = await shallPass(
             sendTransaction(txName, signers, args)
@@ -61,8 +57,6 @@ describe("2. Make offer", () => {
 
         expect(txFileResult).toEqual(txInlineResult)
         expect(txShortResult).toEqual(txInlineResult)
-
-        console.log({ txShortResult, inlineLogs })
     });
 
     afterEach(async () => {
