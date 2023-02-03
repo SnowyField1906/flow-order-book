@@ -1,5 +1,5 @@
 import path from "path"
-import { init, emulator, getAccountAddress, sendTransaction, shallPass } from "@onflow/flow-js-testing";
+import { init, emulator, getAccountAddress, deployContractByName, getContractAddress, getContractCode, getTransactionCode, sendTransaction, shallPass } from "@onflow/flow-js-testing";
 
 async function deployContract(param) {
     const [result, error] = await deployContractByName(param);
@@ -10,8 +10,11 @@ async function deployContract(param) {
     }
 }
 
-describe("LinkedList", () => {
+describe("2. Make offer", () => {
     let serviceAccount;
+    let txTemplate;
+    let contractName = "SimpleMarket"
+    let txName = "2. Make offer"
 
     beforeEach(async () => {
 
@@ -22,28 +25,45 @@ describe("LinkedList", () => {
         await emulator.start({ logging });
 
         serviceAccount = await getAccountAddress("ServiceAccount");
-
-        await deployContract({ to: serviceAccount, name: "FungibleToken" });
-        await deployContract({ to: serviceAccount, name: "utility/NonFungibleToken" });
-        await deployContract({ to: serviceAccount, name: "utility/MetadataViews" });
-        await deployContract({ to: serviceAccount, name: "FungibleTokenMetadataViews" });
-        await deployContract({ to: serviceAccount, name: "ExampleToken" });
-
-        // ...and finally we get the address for a couple of regular accounts
-        exampleTokenUserA = await getAccountAddress("exampleTokenUserA");
-        exampleTokenUserB = await getAccountAddress("exampleTokenUserB");
-
+        await deployContract({ to: serviceAccount, name: contractName })
     });
 
+    test("Should get template code", async () => {
+        const SimpleMarket = await getContractAddress(contractName)
+        const addressMap = { SimpleMarket }
 
-    test("get account address", async () => {
+        txTemplate = await getTransactionCode({
+            name: txName,
+            addressMap,
+        })
+        expect(txTemplate).not.toBeNull()
+    });
 
-
+    test("Should send transaction", async () => {
         const Alice = await getAccountAddress("Alice")
+        const Bob = await getAccountAddress("Bob")
 
-        // Expect Alice to be address of Alice's account
-        expect(isAddress(Alice)).toBe(true)
-    })
+        const signers = [Alice, Bob]
+        const args = [serviceAccount, 0x02, 1, 0x03, 2]
+
+        const [txInlineResult] = await shallPass(
+            sendTransaction({ "code": txTemplate, signers, args })
+        )
+        const [txFileResult, , fileLogs] = await shallPass(
+            sendTransaction({ "name": txName, signers, args })
+        )
+        const [txShortResult, , inlineLogs] = await shallPass(
+            sendTransaction(txName, signers, args)
+        )
+
+        expect(fileLogs).toEqual(expectedLogs)
+        expect(inlineLogs).toEqual(expectedLogs)
+
+        expect(txFileResult).toEqual(txInlineResult)
+        expect(txShortResult).toEqual(txInlineResult)
+
+        console.log({ txShortResult, inlineLogs })
+    });
 
     afterEach(async () => {
         await emulator.stop()
