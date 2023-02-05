@@ -1,7 +1,8 @@
 import path from "path"
-import { init, emulator, getContractAddress, getContractCode, getTransactionCode, getScriptCode } from "@onflow/flow-js-testing";
+import { init, emulator, deployContractByName, getContractAddress, getContractCode, getTransactionCode, getScriptCode } from "@onflow/flow-js-testing";
 
-import { contractNames, scriptNames, transactionNames } from "../file-names.js"
+import { addressMap, contractNames, scriptNames, transactionNames } from "../helpers.js"
+
 
 describe("Template contracts", () => {
     beforeEach(async () => {
@@ -13,9 +14,6 @@ describe("Template contracts", () => {
     });
 
     test("Should get contract code", async () => {
-        const contract = await getContractAddress(contractNames[0])
-        const addressMap = { contract }
-
         const contractTemplate = await getContractCode({
             name: contractNames[0],
             addressMap,
@@ -39,9 +37,6 @@ describe("Template scripts", () => {
 
     scriptNames.forEach((name, i) => {
         test(`Should get script code ${i}`, async () => {
-            const contract = await getContractAddress(contractNames[0])
-            const addressMap = { contract }
-
             const scriptTemplate = await getScriptCode({
                 "name": name,
                 addressMap
@@ -57,12 +52,6 @@ describe("Template scripts", () => {
 });
 
 describe("Template transactions", () => {
-    let names = [
-        "0. Setup account",
-        "1. Make offer",
-        "2. Take offer",
-    ]
-
     beforeEach(async () => {
         const basePath = path.resolve(__dirname, "./../../");
         const logging = false;
@@ -73,13 +62,11 @@ describe("Template transactions", () => {
 
     transactionNames.forEach((name, i) => {
         test(`Should get transaction code ${i}`, async () => {
-            const contract = await getContractAddress(contractNames[0])
-            const addressMap = { contract }
-
             const transactionTemplate = await getTransactionCode({
                 "name": name,
                 addressMap
             })
+            // console.log(transactionTemplate)
             expect(transactionTemplate).toBeDefined()
         });
     })

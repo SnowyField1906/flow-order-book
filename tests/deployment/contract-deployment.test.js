@@ -1,8 +1,10 @@
 import path from "path"
 import { init, emulator, deployContractByName, getContractAddress } from "@onflow/flow-js-testing";
 
+import { addressMap, contractNames } from "../helpers.js"
+
 async function deployContract(param) {
-    const [result, error] = await deployContractByName(param);
+    const [, error] = await deployContractByName(param);
     if (error != null) {
         console.log(`Error in deployment - ${error}`);
         emulator.stop();
@@ -11,9 +13,6 @@ async function deployContract(param) {
 }
 
 describe("Deployment", () => {
-    let serviceAccount;
-    let name = "SimpleMarket"
-
     beforeEach(async () => {
         const basePath = path.resolve(__dirname, "./../../");
         const logging = false;
@@ -23,9 +22,8 @@ describe("Deployment", () => {
     });
 
     test("Should deploy contract", async () => {
-
-        await deployContract({ to: serviceAccount, name: name })
-        const SimpleMarket = await getContractAddress(name)
+        await deployContract({ name: contractNames[0] })
+        const SimpleMarket = await getContractAddress(contractNames[0])
         expect(SimpleMarket).toBeDefined()
     });
 
