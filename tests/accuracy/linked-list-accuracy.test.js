@@ -13,9 +13,11 @@ async function deployContract(param) {
 }
 
 describe("Output", () => {
-    let txName = transactionNames[1]
+    // let txName = transactionNames[1]
 
-    beforeEach(async () => {
+    let signers, offers, ids, prices, currentID
+
+    beforeAll(async () => {
         const basePath = path.resolve(__dirname, "./../../");
         const logging = false;
 
@@ -25,11 +27,9 @@ describe("Output", () => {
         await deployContract({ name: contractNames[0] })
     });
 
-    test("Should store and query exactly offers and ids", async () => {
+    test("Should store & query exactly offers & ids after having been made", async () => {
         const Alice = await getAccountAddress("Alice")
-
-        const signers = [Alice]
-
+        signers = [Alice]
         const expectedOffers = [
             {
                 uuid: '26',
@@ -48,7 +48,6 @@ describe("Output", () => {
                 buyAmount: '3.00000000'
             }
         ]
-
 
         await shallPass(
             sendTransaction({
@@ -73,57 +72,136 @@ describe("Output", () => {
                 ]
             }))
 
-        const [offers,] = await shallResolve(
+        offers = await shallResolve(
             executeScript({
                 "code": scriptTemplates[0],
                 "args": []
             }))
-        const [ids,] = await shallResolve(
+        ids = await shallResolve(
             executeScript({
                 "code": scriptTemplates[1],
                 "args": []
             }))
-        const [prices,] = await shallResolve(
+        prices = await shallResolve(
             executeScript({
                 "code": scriptTemplates[2],
                 "args": []
             }))
 
-        const expectedIDs = Object.keys(offers)
+        const expectedIDs = Object.keys(offers[0])
         const expectedPrices = Object.values(expectedOffers).map(offer =>
             +offer.buyAmount / +offer.payAmount
         )
-        const expectedAdjacencies0 = ["0", expectedIDs[1]]
-        const expectedAdjacencies1 = [expectedIDs[0], "0"]
+        const expectedIDDetails = [
+            {
+                left: '0',
+                right: expectedIDs[1],
+            },
+            {
+                left: expectedIDs[0],
+                right: '0',
+            }
+        ]
 
-        console.log(expectedAdjacencies0, expectedAdjacencies1)
-        const [adjacencies0,] = await shallResolve(
+        const [idDetails0,] = await shallResolve(
             executeScript({
-                "code": scriptTemplates[6],
+                "code": scriptTemplates[5],
                 "args": [+expectedIDs[0]]
             }))
-        const [adjacencies1,] = await shallResolve(
+        const [idDetails1,] = await shallResolve(
             executeScript({
-                "code": scriptTemplates[6],
+                "code": scriptTemplates[5],
                 "args": [+expectedIDs[1]]
             }))
+        currentID = await shallResolve(
+            executeScript({
+                "code": scriptTemplates[7],
+                "args": []
+            }))
 
-        console.log("Offers =", offers)
-        console.log("IDs =", ids)
-        console.log("Prices =", prices)
-        console.log(`Adjacencies' ${expectedIDs[0]}:`, adjacencies0)
-        console.log(`Adjacencies' ${expectedIDs[1]}:`, adjacencies1)
+        console.log("Offers =", Object.values(offers[0]))
+        console.log("IDs =", ids[0])
+        console.log("Prices =", prices[0])
+        console.log(`ID details =`, [idDetails0, idDetails1])
+        console.log(`Current ID =`, currentID[0])
 
-        expect(Object.values(offers)).toEqual(expectedOffers)
-        expect(Object.values(ids)).toEqual(expectedIDs)
-        expect(Object.values(prices).map(price =>
+        expect(Object.values(offers[0])).toEqual(expectedOffers)
+        expect(Object.values(ids[0])).toEqual(expectedIDs)
+        expect(Object.values(prices[0]).map(price =>
             parseFloat(price))
         ).toEqual(expectedPrices)
-        expect(Object.values(adjacencies0)).toEqual(expectedAdjacencies0)
-        expect(Object.values(adjacencies1)).toEqual(expectedAdjacencies1)
+        expect(idDetails0).toEqual(expectedIDDetails[0])
+        expect(idDetails1).toEqual(expectedIDDetails[1])
+        expect(currentID[0]).toEqual(expectedIDs[0])
     });
 
-    afterEach(async () => {
+
+    test("Should store & query exactly offers & ids after having been bought", async () => {
+        const quantity = 1.00000000
+        await shallPass(
+            sendTransaction({
+                "code": transactionTemplates[2],
+                "signers": signers,
+                "args": [
+                    +currentID[0],
+                    quantity
+                ]
+            }))
+        offers = await shallResolve(
+            executeScript({
+                "code": scriptTemplates[0],
+                "args": []
+            }))
+        console.log("Offers =", Object.values(offers[0]))
+    });
+
+    test("Should store & query exactly offers & ids after having been moved", async () => {
+        const quantity = 1.00000000
+        await shallPass(
+            sendTransaction({
+                "code": transactionTemplates[2],
+                "signers": signers,
+                "args": [
+                    +currentID[0],
+                    quantity
+                ]
+            }))
+        currentID = await shallResolve(
+            executeScript({
+                "code": scriptTemplates[7],
+                "args": []
+            }))
+
+        offers = await shallResolve(
+            executeScript({
+                "code": scriptTemplates[0],
+                "args": []
+            }))
+        ids = await shallResolve(
+            executeScript({
+                "code": scriptTemplates[1],
+                "args": []
+            }))
+        prices = await shallResolve(
+            executeScript({
+                "code": scriptTemplates[2],
+                "args": []
+            }))
+        const [idDetails,] = await shallResolve(
+            executeScript({
+                "code": scriptTemplates[5],
+                "args": [+ids[0]]
+            }))
+
+        console.log("Offers =", Object.values(offers[0]))
+        console.log("IDs =", ids[0])
+        console.log("Prices =", prices[0])
+        console.log(`ID details =`, [idDetails])
+        console.log(`Current ID =`, currentID[0])
+
+    });
+
+    afterAll(async () => {
         await emulator.stop()
     })
 })

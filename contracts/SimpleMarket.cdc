@@ -42,23 +42,24 @@ pub contract SimpleMarket {
     }
 
     pub fun buy(_ id: UInt32, _ quantity: UFix64) {
-        let cost: UFix64      = self.offers[id]?.buyAmount! * quantity / self.offers[id]?.payAmount!
+        let cost     : UFix64 = self.offers[id]?.buyAmount! * quantity / self.offers[id]?.payAmount!
         let payAmount: UFix64 = self.offers[id]?.payAmount! - quantity
         let buyAmount: UFix64 = self.offers[id]?.buyAmount! - cost
 
         if payAmount == 0.0 || buyAmount == 0.0 {
             self.removeNode(id)
-            destroy self.offers.remove(key: id) as! @Offer
+            destroy self.offers.remove(key: id)
         }
         else {
-            var offer: @Offer <- create Offer(
+            var offer: @Offer? <- create Offer(
                 self.offers[id]?.maker!,
                 self.offers[id]?.payToken!,
                 payAmount,
                 self.offers[id]?.buyToken!,
                 buyAmount
             )
-            self.offers[id] <-! offer
+            self.offers[id] <-> offer
+            destroy offer
         }
     }
 
@@ -145,21 +146,23 @@ pub contract SimpleMarket {
             let right: UInt32 = self.ids[id]!.right
 
             if right != 0 && self.higherPrices - self.lowerPrices >= 0 {
-                self.ids[left] = Node(left: self.ids[left]!.left, right: right)
-                if right != 0 {
-                    self.ids[right] = Node(left: left, right: self.ids[right]!.right)
-                }
-
-                log("removed current node: ".concat(id.toString()).concat(" the price will go up"))
-                self.higherPrices = self.higherPrices - 1
-            }
-            else if left != 0 && self.higherPrices - self.lowerPrices < 0 {
                 self.ids[right] = Node(left: left, right: self.ids[right]!.right)
                 if left != 0 {
                     self.ids[left] = Node(left: self.ids[left]!.left, right: right)
                 }
 
+                log("removed current node: ".concat(id.toString()).concat(" the price will go up"))
+                self.current = right
+                self.higherPrices = self.higherPrices - 1
+            }
+            else if left != 0 && self.higherPrices - self.lowerPrices < 0 {
+                self.ids[left] = Node(left: self.ids[left]!.left, right: right)
+                if right != 0 {
+                    self.ids[right] = Node(left: left, right: self.ids[right]!.right)
+                }
+
                 log("removed current node: ".concat(id.toString()).concat(" the price will go down"))
+                self.current = left
                 self.lowerPrices = self.lowerPrices - 1
             }
             else {

@@ -1,5 +1,5 @@
-import Token0 from 0x02
-import Token1 from 0x03
+import Token0 from 0xf8d6e0586b0a20c7
+import Token1 from 0xf8d6e0586b0a20c7
 
 pub fun main(user: Address) : [UFix64] {
     let user = getAccount(user)

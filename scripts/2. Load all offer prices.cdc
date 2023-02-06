@@ -1,5 +1,4 @@
-import SimpleMarket from 0x05
-// import BinarySearchOffers from 0x9d380238fdd484d7
+import SimpleMarket from "./../contracts/SimpleMarket.cdc"
 
 pub fun main(): [UFix64] {
     let ids: [UFix64] = []

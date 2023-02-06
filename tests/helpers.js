@@ -8,7 +8,8 @@ export const scriptNames = [
     "4. Load user balance",
     "5. Load id detail",
     "6. Load adjacent ids",
-    "7. Load current id"
+    "7. Load current id",
+    "8. Load higher & lower prices"
 ]
 
 export const transactionNames = [
@@ -117,5 +118,10 @@ export const scriptTemplates = [
 
     pub fun main(): UInt32 {
         return SimpleMarket.current
+    }`,
+    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+
+    pub fun main(): [UInt16] {
+        return [SimpleMarket.lowerPrices, SimpleMarket.higherPrices]
     }`
 ]

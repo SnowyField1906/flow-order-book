@@ -35,7 +35,7 @@ describe("1. Make offer", () => {
     // })
     let txName = transactionNames[1]
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const basePath = path.resolve(__dirname, "./../../");
         const logging = false;
 
@@ -93,7 +93,7 @@ describe("1. Make offer", () => {
         expect(txInlineResult).toEqual(expectedResult)
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await emulator.stop()
     })
 })

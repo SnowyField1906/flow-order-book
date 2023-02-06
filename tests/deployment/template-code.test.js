@@ -5,7 +5,7 @@ import { addressMap, contractNames, scriptNames, transactionNames } from "../hel
 
 
 describe("Template contracts", () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
         const basePath = path.resolve(__dirname, "./../../");
         const logging = false;
 
@@ -21,13 +21,13 @@ describe("Template contracts", () => {
         expect(contractTemplate).toBeDefined()
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await emulator.stop()
     })
 })
 
 describe("Template scripts", () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
         const basePath = path.resolve(__dirname, "./../../");
         const logging = false;
 
@@ -46,13 +46,13 @@ describe("Template scripts", () => {
     })
 
 
-    afterEach(async () => {
+    afterAll(async () => {
         await emulator.stop()
     })
 });
 
 describe("Template transactions", () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
         const basePath = path.resolve(__dirname, "./../../");
         const logging = false;
 
@@ -72,7 +72,7 @@ describe("Template transactions", () => {
     })
 
 
-    afterEach(async () => {
+    afterAll(async () => {
         await emulator.stop()
     })
 });

@@ -1,6 +1,6 @@
-import SimpleMarket from 0x01
-import Token0 from 0x02
-import Token1 from 0x03
+import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+import Token0 from "./../contracts/SimpleMarket.cdc"
+import Token1 from "./../contracts/SimpleMarket.cdc"
 
 transaction {
     prepare(acct: AuthAccount) {
