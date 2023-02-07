@@ -20,10 +20,10 @@ pub contract BinarySearchOffers {
         }
 
         let offerRef: &Offer? = &offers[key] as &Offer?
-        let rootRef: &Offer? = &offers[root.key] as &Offer?
+        let rootRef : &Offer? = &offers[root.key] as &Offer?
 
         let offerPrice: UFix64 = offerRef!.payAmount / offerRef!.buyAmount
-        let rootPrice: UFix64 = rootRef!.payAmount / rootRef!.buyAmount
+        let rootPrice : UFix64 = rootRef!.payAmount / rootRef!.buyAmount
 
         if rootPrice < offerPrice {
             root.right = self.insertNode(root.right, key)
@@ -36,13 +36,8 @@ pub contract BinarySearchOffers {
     }
 
     pub fun findNode(_ root: Node, _ key: UInt32): Node {
-        if root.key == 0 {
-            return Node(0)
-        }
-
-        if root.key == key {
-            return root
-        }
+        if root.key == 0 { return Node(0) }
+        if root.key == key { return root }
 
         let offerRef: &Offer? = &offers[key] as &Offer?
         let rootRef: &Offer? = &offers[root.key] as &Offer?
@@ -70,9 +65,7 @@ pub contract BinarySearchOffers {
     }
 
     pub fun deleteNode(_ root: Node, _ key: UInt32): Node {
-        if root.key == 0 {
-            return Node(0)
-        }
+        if root.key == 0 { return Node(0) }
 
         if root.key < key {
             root.right = self.deleteNode(root.right, key)

@@ -19,14 +19,7 @@
       "port": 3569,
       "serviceAccount": "emulator-account"
     }
-  },
-  "contracts": {
-    "SimpleMarket": {
-      "source": "./contracts/SimpleMarket.cdc",
-      "aliases": {
-        "emulators": "f8d6e0586b0a20c7",
-        "testnet": "9d380238fdd484d7"
-      }
-    }
   }
+
 }
+ 

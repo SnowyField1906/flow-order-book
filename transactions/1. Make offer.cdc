@@ -9,7 +9,7 @@ transaction(payToken: Address, payAmount: UFix64, buyToken: Address, buyAmount: 
     }
 
     execute {
-        let offer = SimpleMarket.makeOffer(self.maker, payToken, payAmount, buyToken, buyAmount)    
+        let offer = SimpleMarket.makeOffer(self.maker, payAmount, buyAmount)    
     }
 }
  

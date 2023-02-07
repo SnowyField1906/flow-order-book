@@ -24,7 +24,7 @@ export const transactionTemplates = [
     ``,
     `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
 
-    transaction(payToken: Address, payAmount: UFix64, buyToken: Address, buyAmount: UFix64) {
+    transaction(payAmount: UFix64, buyAmount: UFix64) {
     
         let maker: Address
     
@@ -33,7 +33,7 @@ export const transactionTemplates = [
         }
     
         execute {
-            let offer = SimpleMarket.makeOffer(self.maker, payToken, payAmount, buyToken, buyAmount)    
+            let offer = SimpleMarket.makeOffer(self.maker, payAmount, buyAmount)    
         }
     }`,
     `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
@@ -64,9 +64,13 @@ export const scriptTemplates = [
         let ids: [UInt32] = []
     
         var current = SimpleMarket.current
-        while (current != 0) {
+        fun inorder(_ current: UInt32) {
+            if current == 0 {
+                return
+            }
+            inorder(SimpleMarket.ids[current]?.left!)
             ids.append(current)
-            current = SimpleMarket.ids[current]!.right
+            inorder(SimpleMarket.ids[current]?.left!)
         }
     
         return ids

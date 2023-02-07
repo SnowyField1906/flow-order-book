@@ -1,13 +1,12 @@
 pub contract SimpleMarket {
-    pub let offers:     @{UInt32: Offer}
-    pub let ids:         {UInt32: Node}
-    pub var current:      UInt32
-    pub var nextID: UInt32
-    pub var lowerPrices:  UInt16
-    pub var higherPrices: UInt16
+    
+    pub let offers:       @{UInt32: Offer}
+    pub let ids:           {UInt32: Node}
+    pub var current:        UInt32
+    pub var lowerPrices:    UInt16
+    pub var higherPrices:   UInt16
 
     init() {
-        self.nextID = 0
         self.current = 0
         self.ids = {}
         self.offers <- {}
@@ -17,27 +16,29 @@ pub contract SimpleMarket {
 
     pub resource Offer {
         pub      let maker     : Address
+        pub      let payToken  : Address
         pub(set) var payAmount : UFix64
+        pub      let buyToken  : Address
         pub(set) var buyAmount : UFix64
 
-        init(
-            _ maker : Address, _ payAmount: UFix64, _ buyAmount: UFix64
+        init(_ maker   : Address,
+            _ payToken: Address, _ payAmount: UFix64,
+            _ buyToken: Address, _ buyAmount: UFix64
         ) {
             self.maker      = maker
+            self.payToken   = payToken
             self.payAmount  = payAmount
+            self.buyToken   = buyToken
             self.buyAmount  = buyAmount
         }
     }
 
-
-    pub fun makeOffer(
-        _ maker: Address, _ payAmount: UFix64,_ buyAmount: UFix64
+    pub fun makeOffer(_ maker: Address, _ payToken: Address,
+        _ payAmount: UFix64, _ buyToken: Address, _ buyAmount: UFix64
     ): &Offer? {
-        let id: UInt32 = self.nextID
-        self.nextID = self.nextID + 1
-        
+        let id: UInt32 = UInt32(getCurrentBlock().timestamp)
         let newOffer: @Offer <- create Offer(
-            maker, payAmount, buyAmount
+            maker, payToken, payAmount, buyToken, buyAmount
         )
         
         self.offers[id] <-! newOffer
@@ -46,7 +47,6 @@ pub contract SimpleMarket {
 
         return &self.offers[id] as &Offer? 
     }
-
 
     pub fun buy(_ id: UInt32, _ quantity: UFix64) {
         let cost     : UFix64 = self.offers[id]?.buyAmount! * quantity / self.offers[id]?.payAmount!
@@ -60,7 +60,9 @@ pub contract SimpleMarket {
         else {
             var offer: @Offer? <- create Offer(
                 self.offers[id]?.maker!,
+                self.offers[id]?.payToken!,
                 payAmount,
+                self.offers[id]?.buyToken!,
                 buyAmount
             )
             self.offers[id] <-> offer
@@ -68,15 +70,12 @@ pub contract SimpleMarket {
         }
     }
 
-
     pub fun getPrice(_ id: UInt32): UFix64 {
         let offer: &Offer? = &self.offers[id] as &Offer?
         return offer!.buyAmount / offer!.payAmount
     }
 
-
     /////////////////////////////////////////////
-
 
     pub struct Node {
         pub(set) var left : UInt32
@@ -88,12 +87,13 @@ pub contract SimpleMarket {
         }
     }
 
-
     pub fun insertNode(_ id: UInt32): Node {
 
+        // log("starting to insert node: ".concat(id.toString()))
         if self.current == 0 {
             self.current = id 
 
+            // log("inserted first node: ".concat(id.toString()))
             return Node(left: 0, right: 0)
         }
 
@@ -103,12 +103,14 @@ pub contract SimpleMarket {
 
         if self.comparePrice(curr, id) == -1 {
 
+            // log("looping to right")
             while self.ids[curr]?.right != 0 &&
                 self.comparePrice(self.ids[curr]!.right, id) == -1
             {
                 curr = self.ids[curr]!.right
             }
 
+            // log("assigning")
             let next: UInt32 = self.ids[curr]!.right
             left  = curr
             right = next != 0 ? next : 0
@@ -126,11 +128,13 @@ pub contract SimpleMarket {
         }
         else if self.comparePrice(curr, id) == 1 {
         
+            // log("looping to left")
             while self.ids[curr]?.left != 0 &&
                 self.comparePrice(self.ids[curr]!.left, id) == -1 {
                 curr = self.ids[curr]!.left
             }
 
+            // log("assigning")
             let next: UInt32 = self.ids[curr]!.left
             left = next != 0 ? next : 0
             right = curr
@@ -147,13 +151,14 @@ pub contract SimpleMarket {
             self.lowerPrices = self.lowerPrices + 1
         }
 
+        // log("inserted node: ".concat(id.toString()))
 
         return Node(left: left, right: right)
     }
 
-
     pub fun removeNode(_ id: UInt32) {
 
+        // log("starting to remove node: ".concat(id.toString()))
         if self.current == id {
             let left : UInt32 = self.ids[id]!.left
             let right: UInt32 = self.ids[id]!.right
@@ -168,6 +173,7 @@ pub contract SimpleMarket {
                     )
                 }
 
+                // log("removed current node: ".concat(id.toString()).concat(" the price will go up"))
                 self.current = right
                 self.higherPrices = self.higherPrices - 1
             }
@@ -181,11 +187,13 @@ pub contract SimpleMarket {
                     )
                 }
 
+                // log("removed current node: ".concat(id.toString()).concat(" the price will go down"))
                 self.current = left
                 self.lowerPrices = self.lowerPrices - 1
             }
             else {
                 self.current = 0
+                // log("removed last node: ".concat(id.toString()))
             }
             return
         }
@@ -194,10 +202,12 @@ pub contract SimpleMarket {
 
         if self.comparePrice(curr, id) == -1 {
 
+            // log("looping to right")
             while curr != id {
                 curr = self.ids[curr]!.right
             }
 
+            // log("assigning")
             let left : UInt32 = self.ids[id]!.left
             let right: UInt32 = self.ids[id]!.right
             self.ids[left] = Node(
@@ -213,10 +223,12 @@ pub contract SimpleMarket {
         }
         else if self.comparePrice(curr, id) == 1 {
 
+            // log("looping to left")
             while curr != id {
                 curr = self.ids[curr]!.left
             }
 
+            // log("assigning")
             let left : UInt32 = self.ids[id]!.left
             let right: UInt32 = self.ids[id]!.right
             self.ids[right] = Node(
@@ -231,27 +243,43 @@ pub contract SimpleMarket {
             self.lowerPrices = self.lowerPrices - 1
         }
 
+        // log("removed node: ".concat(id.toString()))
+
         return
     }
-
 
     pub fun comparePrice(_ a: UInt32, _ b: UInt32): Int16 {
         let offer0: &SimpleMarket.Offer? = &self.offers[a] as &Offer?
         let offer1: &SimpleMarket.Offer? = &self.offers[b] as &Offer?
 
+        // log("comparing: ".concat(a.toString()).concat(" and ").concat(b.toString()))
+
         if offer0 == nil || offer1 == nil {
+            // log("offer is nil")
             return -2
         }
 
         if self.getPrice(a) > self.getPrice(b) {
+            // log((self.getPrice(a)).toString().concat(" and ").concat((self.getPrice(b)).toString().concat(": bigger")))
             return 1
         }
         else if self.getPrice(a) < self.getPrice(b) {
+            // log((self.getPrice(a)).toString().concat(" and ").concat((self.getPrice(b)).toString().concat(": smaller")))
             return -1
         }
         else {
+            // log((offer0!.payAmount / offer0!.buyAmount).toString().concat(" and ").concat((offer1!.payAmount / offer1!.buyAmount).toString().concat(": equal")))
             return 0
         }
+    }
+
+    pub fun inorderTraversal(_ current: UInt32) {
+        if SimpleMarket.ids[current] == nil {
+            return
+        }
+        self.inorderTraversal(SimpleMarket.ids[current]!.left)
+        log(current)
+        self.inorderTraversal(SimpleMarket.ids[current]!.right)
     }
 }
  

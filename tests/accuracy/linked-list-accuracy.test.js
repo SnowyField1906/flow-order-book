@@ -34,18 +34,28 @@ describe("Linked list", () => {
             {
                 uuid: '26',
                 maker: signers[0],
-                payToken: '0x0000000000000002',
                 payAmount: '2.00000000',
-                buyToken: '0x0000000000000003',
                 buyAmount: '5.00000000'
             },
             {
                 uuid: '27',
                 maker: signers[0],
-                payToken: '0x0000000000000002',
                 payAmount: '1.00000000',
-                buyToken: '0x0000000000000003',
                 buyAmount: '3.00000000'
+            }
+        ]
+        const expectedIDs = ["0", "1"]
+        const expectedPrices = Object.values(expectedOffers).map(offer =>
+            +offer.buyAmount / +offer.payAmount
+        )
+        const expectedIDDetails = [
+            {
+                left: '0',
+                right: expectedIDs[1],
+            },
+            {
+                left: expectedIDs[0],
+                right: '0',
             }
         ]
 
@@ -54,23 +64,22 @@ describe("Linked list", () => {
                 "code": transactionTemplates[1],
                 "signers": signers,
                 "args": [
-                    expectedOffers[0].payToken,
                     expectedOffers[0].payAmount,
-                    expectedOffers[0].buyToken,
                     expectedOffers[0].buyAmount
                 ]
-            }))
+            })
+        )
+
         await shallPass(
             sendTransaction({
                 "code": transactionTemplates[1],
                 "signers": signers,
                 "args": [
-                    expectedOffers[1].payToken,
                     expectedOffers[1].payAmount,
-                    expectedOffers[1].buyToken,
                     expectedOffers[1].buyAmount
                 ]
-            }))
+            })
+        )
 
         const [offers,] = await shallResolve(
             executeScript({
@@ -90,21 +99,6 @@ describe("Linked list", () => {
                 "args": []
             })
         )
-
-        const expectedIDs = Object.keys(offers)
-        const expectedPrices = Object.values(expectedOffers).map(offer =>
-            +offer.buyAmount / +offer.payAmount
-        )
-        const expectedIDDetails = [
-            {
-                left: '0',
-                right: expectedIDs[1],
-            },
-            {
-                left: expectedIDs[0],
-                right: '0',
-            }
-        ]
 
         const [idDetails0,] = await shallResolve(
             executeScript({
@@ -148,17 +142,13 @@ describe("Linked list", () => {
             {
                 uuid: '28',
                 maker: '0x01cf0e2f2f715450',
-                payToken: '0x0000000000000002',
                 payAmount: '1.00000000',
-                buyToken: '0x0000000000000003',
                 buyAmount: '2.50000000'
             },
             {
                 uuid: '27',
                 maker: '0x01cf0e2f2f715450',
-                payToken: '0x0000000000000002',
                 payAmount: '1.00000000',
-                buyToken: '0x0000000000000003',
                 buyAmount: '3.00000000'
             }
         ]
@@ -191,9 +181,7 @@ describe("Linked list", () => {
             {
                 uuid: '27',
                 maker: '0x01cf0e2f2f715450',
-                payToken: '0x0000000000000002',
                 payAmount: '1.00000000',
-                buyToken: '0x0000000000000003',
                 buyAmount: '3.00000000'
             }
         ]

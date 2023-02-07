@@ -1,13 +1,12 @@
 pub contract SimpleMarket {
-    pub let offers:     @{UInt32: Offer}
-    pub let ids:         {UInt32: Node}
-    pub var current:      UInt32
-    pub var nextID: UInt32
-    pub var lowerPrices:  UInt16
-    pub var higherPrices: UInt16
+    
+    pub let offers:       @{UInt32: Offer}
+    pub let ids:           {UInt32: Node}
+    pub var current:        UInt32
+    pub var lowerPrices:    UInt16
+    pub var higherPrices:   UInt16
 
     init() {
-        self.nextID = 0
         self.current = 0
         self.ids = {}
         self.offers <- {}
@@ -17,27 +16,30 @@ pub contract SimpleMarket {
 
     pub resource Offer {
         pub      let maker     : Address
+        pub      let payToken  : Address
         pub(set) var payAmount : UFix64
+        pub      let buyToken  : Address
         pub(set) var buyAmount : UFix64
 
-        init(
-            _ maker : Address, _ payAmount: UFix64, _ buyAmount: UFix64
+        init(_ maker   : Address,
+            _ payToken: Address, _ payAmount: UFix64,
+            _ buyToken: Address, _ buyAmount: UFix64
         ) {
             self.maker      = maker
+            self.payToken   = payToken
             self.payAmount  = payAmount
+            self.buyToken   = buyToken
             self.buyAmount  = buyAmount
         }
     }
 
 
-    pub fun makeOffer(
-        _ maker: Address, _ payAmount: UFix64,_ buyAmount: UFix64
+    pub fun makeOffer(_ maker: Address, _ payToken: Address,
+        _ payAmount: UFix64, _ buyToken: Address, _ buyAmount: UFix64
     ): &Offer? {
-        let id: UInt32 = self.nextID
-        self.nextID = self.nextID + 1
-        
+        let id: UInt32 = UInt32(getCurrentBlock().timestamp)
         let newOffer: @Offer <- create Offer(
-            maker, payAmount, buyAmount
+            maker, payToken, payAmount, buyToken, buyAmount
         )
         
         self.offers[id] <-! newOffer
@@ -60,7 +62,9 @@ pub contract SimpleMarket {
         else {
             var offer: @Offer? <- create Offer(
                 self.offers[id]?.maker!,
+                self.offers[id]?.payToken!,
                 payAmount,
+                self.offers[id]?.buyToken!,
                 buyAmount
             )
             self.offers[id] <-> offer
