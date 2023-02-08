@@ -1,10 +1,8 @@
-pub contract SimpleMarket {
-    pub let offers:     @{UInt32: Offer}
-    pub let ids:         {UInt32: Node}
-    pub var current:      UInt32
-    pub var nextID: UInt32
-    pub var lowerPrices:  UInt16
-    pub var higherPrices: UInt16
+import RedBlackTree from "./RedBlackTree.cdc"
+
+pub contract SimpleMarket: RedBlackTree {
+    pub let offers:     @{UFix64: Offer}
+    pub let ids:        RedBlackTree.Node
 
     init() {
         self.nextID = 0
