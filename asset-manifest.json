@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/Flow-order-book/static/css/main.b0a08a23.css",
+    "main.js": "/Flow-order-book/static/js/main.8ba4882c.js",
+    "index.html": "/Flow-order-book/index.html",
+    "main.b0a08a23.css.map": "/Flow-order-book/static/css/main.b0a08a23.css.map",
+    "main.8ba4882c.js.map": "/Flow-order-book/static/js/main.8ba4882c.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b0a08a23.css",
+    "static/js/main.8ba4882c.js"
+  ]
+}
