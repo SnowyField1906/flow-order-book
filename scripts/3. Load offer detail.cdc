@@ -1,5 +1,5 @@
-import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+import OrderBook from "./../contracts/OrderBook.cdc"
 
-pub fun main(id: UInt32): &SimpleMarket.Offer? {
-    return &SimpleMarket.offers[id] as &SimpleMarket.Offer?
+pub fun main(id: UFix64): &OrderBook.Offer? {
+    return &OrderBook.offers[id] as &OrderBook.Offer?
 }

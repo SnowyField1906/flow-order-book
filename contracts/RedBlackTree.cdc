@@ -1,7 +1,7 @@
-//LICENSE TO: https://github.com/perpdex/BokkyPooBahsRedBlackTreeLibrary
+//LICENSE TO: https://github.com/perpdex/BokkyPooBahsRedBlackTreeLibrary/blob/feature/bulk/contracts/BokkyPooBahsRedBlackTreeLibrary.sol
 
 access(all) contract RedBlackTree {
-    pub var EMPTY: UInt32
+    priv var EMPTY: UInt32
 
     pub(set) var root: UInt32
     pub(set) var nodes: {UInt32: Node}
@@ -9,9 +9,8 @@ access(all) contract RedBlackTree {
     init() {
         self.EMPTY = 0
         self.root = self.EMPTY
-        self.nodes = {}
+        self.nodes = {0 : Node(parent: 0, left: 0, right: 0, red: false)}
     }
-
 
     pub struct Node {
         pub var parent: UInt32
@@ -20,10 +19,10 @@ access(all) contract RedBlackTree {
         pub var red:  Bool
 
         init(parent: UInt32, left: UInt32, right: UInt32, red: Bool) {
-            self.parent = RedBlackTree.EMPTY
-            self.left = RedBlackTree.EMPTY
-            self.right = RedBlackTree.EMPTY
-            self.red = false
+            self.parent = parent
+            self.left = left
+            self.right = right
+            self.red = red
         }
 
         pub fun changeParent(parent: UInt32) {
@@ -65,52 +64,36 @@ access(all) contract RedBlackTree {
 
     pub fun next(target: UInt32): UInt32 {
         assert(target != self.EMPTY, message: "Target is empty")
-        var cursor: UInt32 = self.nodes[target]!.parent
-        if self.nodes[cursor]!.right != self.EMPTY {
-            cursor = self.treeMinimum(key: self.nodes[target]!.right)
+        if self.nodes[target]!.right != self.EMPTY {
+            return self.treeMinimum(key: self.nodes[target]!.right)
         } else {
+            var cursor: UInt32 = self.nodes[target]!.parent
             var _target: UInt32 = target
             while cursor != self.EMPTY && _target == self.nodes[cursor]!.right {
                 _target = cursor
                 cursor = self.nodes[cursor]!.parent
             }
+            return cursor
         }
-        return cursor
     }
 
     pub fun prev(target: UInt32): UInt32 {
         assert(target != self.EMPTY, message: "Target is empty")
-        var cursor: UInt32 = self.nodes[target]!.parent
-        if self.nodes[cursor]!.left != self.EMPTY {
-            cursor = self.treeMaximum(key: self.nodes[target]!.left)
+        if self.nodes[target]!.left != self.EMPTY {
+            return self.treeMaximum(key: self.nodes[target]!.left)
         } else {
+            var cursor: UInt32 = self.nodes[target]!.parent
             var _target: UInt32 = target
             while cursor != self.EMPTY && _target == self.nodes[cursor]!.left {
                 _target = cursor
                 cursor = self.nodes[cursor]!.parent
             }
+            return cursor
         }
-        return cursor
     }
 
     pub fun exists(key: UInt32): Bool {
-        return (
-            key != self.EMPTY &&
-            // (key == self.root || self.nodes[key]?.parent != self.EMPTY)
-            self.nodes[key] != nil
-        )
-    }
-
-    pub fun isEmpty(): Bool {
-        return self.root == self.EMPTY
-    }
-
-    pub fun getNode(key: UInt32): Node {
-        assert(
-            self.exists(key: key),
-            message: "Key does not exist"
-        )
-        return self.nodes[key]!
+        return (key != self.EMPTY && self.nodes[key] != nil)
     }
 
 
@@ -118,15 +101,11 @@ access(all) contract RedBlackTree {
 
 
     pub fun insert(key: UInt32) {
-        log("Starting to insert")
-
         assert(key != self.EMPTY, message: "Key is empty")
         assert(!self.exists(key: key), message: "Key already exists")
 
         var cursor: UInt32 = self.EMPTY
         var probe: UInt32 = self.root
-
-        log("Starting to do while-loop")
 
         while probe != self.EMPTY {
             cursor = probe
@@ -135,8 +114,6 @@ access(all) contract RedBlackTree {
                 : self.nodes[probe]!.right
         }
 
-        log("Starting to re-assign node")
-
         self.nodes[key] = Node(
             parent: cursor,
             left: self.EMPTY,
@@ -144,20 +121,16 @@ access(all) contract RedBlackTree {
             red: true
         );
 
-        if key < cursor {
-            self.nodes[cursor]?.changeLeft(left: key)
-        } else {
-            self.nodes[cursor]?.changeRight(right: key)
-        }
-
         if cursor == self.EMPTY {
             self.root = key
         }
+        else {
+            key < cursor
+            ? self.nodes[cursor]?.changeLeft(left: key)
+            : self.nodes[cursor]?.changeRight(right: key)
+        }
 
-        log("Fixing up")
         self._insertFixup(key: key)
-
-        log("Finishing to insert")
     }
 
 
@@ -165,12 +138,11 @@ access(all) contract RedBlackTree {
         assert(key != self.EMPTY, message: "Key is empty")
         assert(self.exists(key: key), message: "Key does not exist")
 
-        var _key: UInt32 = key
-        var cursor: UInt32 = _key
+        var cursor: UInt32 = key
         var probe: UInt32 = self.EMPTY
 
         if self.nodes[key]!.left == self.EMPTY || self.nodes[key]!.right == self.EMPTY {
-            cursor = _key
+            cursor = key
         } else {
             cursor = self.nodes[key]?.right!
             while (self.nodes[cursor]?.left != self.EMPTY) {
@@ -178,44 +150,35 @@ access(all) contract RedBlackTree {
             }
         }
 
-        if self.nodes[cursor]?.left != self.EMPTY {
-            probe = self.nodes[cursor]?.left!
-        } else {
-            probe = self.nodes[cursor]?.right!
-        }
+        probe = self.nodes[cursor]?.left != self.EMPTY 
+            ? self.nodes[cursor]?.left!
+            : self.nodes[cursor]?.right!
 
         var yParent: UInt32 = self.nodes[cursor]?.parent!
         self.nodes[probe]?.changeParent(parent: yParent)
 
         if yParent != self.EMPTY {
-            if cursor == self.nodes[yParent]?.left {
-                self.nodes[yParent]?.changeLeft(left: probe)
-            } else {
-                self.nodes[yParent]?.changeRight(right: probe)
-            }
+            cursor == self.nodes[yParent]?.left
+                ? self.nodes[yParent]?.changeLeft(left: probe)
+                : self.nodes[yParent]?.changeRight(right: probe)
         } else {
             self.root = probe
         }
 
-        var doFixup: Bool = !self.nodes[cursor]?.red!
-
-        if cursor != _key {
-            self._replaceParent(a: cursor, b: _key)
+        if cursor != key {
+            self._replaceParent(a: cursor, b: key)
             self.nodes[cursor]?.changeLeft(left: self.nodes[key]?.left!)
             self.nodes[self.nodes[cursor]?.left!]?.changeParent(parent: cursor)
             self.nodes[cursor]?.changeRight(right: self.nodes[key]?.right!)
             self.nodes[self.nodes[cursor]?.right!]?.changeParent(parent: cursor)
             self.nodes[cursor]?.changeColor(red: self.nodes[key]?.red!)
-            cursor <-> _key
+        }
+        
+        if !self.nodes[cursor]?.red! {
+            self._removeFixup(key: probe)
         }
 
-        if doFixup {
-            self._removeFixup(var: probe)
-        }
-
-        if probe == self.EMPTY {
-            self.nodes[probe]?.changeParent(parent: self.EMPTY)
-        }
+        self.nodes.remove(key: key)
     }
 
 
@@ -256,10 +219,10 @@ access(all) contract RedBlackTree {
 
         if keyParent == self.EMPTY {
             self.root = cursor
-        } else if key == self.nodes[keyParent]?.left! {
-            self.nodes[keyParent]?.changeLeft(left: cursor)
         } else {
-            self.nodes[keyParent]?.changeRight(right: cursor)
+            key == self.nodes[keyParent]?.left!
+            ? self.nodes[keyParent]?.changeLeft(left: cursor)
+            : self.nodes[keyParent]?.changeRight(right: cursor)
         }
 
         self.nodes[cursor]?.changeParent(parent: keyParent)
@@ -281,10 +244,10 @@ access(all) contract RedBlackTree {
 
         if keyParent == self.EMPTY {
             self.root = cursor
-        } else if key == self.nodes[keyParent]?.right! {
-            self.nodes[keyParent]?.changeRight(right: cursor)
         } else {
-            self.nodes[keyParent]?.changeLeft(left: cursor)
+            key == self.nodes[keyParent]?.left!
+            ? self.nodes[keyParent]?.changeLeft(left: cursor)
+            : self.nodes[keyParent]?.changeRight(right: cursor)
         }
 
         self.nodes[cursor]?.changeParent(parent: keyParent)
@@ -302,63 +265,61 @@ access(all) contract RedBlackTree {
 
         if bParent == self.EMPTY {
             self.root = a
-        } else if b == self.nodes[bParent]?.left! {
-            self.nodes[bParent]?.changeLeft(left: a)
         } else {
-            self.nodes[bParent]?.changeRight(right: a)
+            b == self.nodes[bParent]?.left!
+            ? self.nodes[bParent]?.changeLeft(left: a)
+            : self.nodes[bParent]?.changeRight(right: a)
         }
     }
 
     pub fun _insertFixup(key: UInt32) {
-        log(self.nodes[key]?.parent)
-
         var _key: UInt32 = key
         var cursor: UInt32 = self.EMPTY
-        while _key != self.root &&
-            self.nodes[self.nodes[_key]?.parent!] != nil &&
-            self.nodes[self.nodes[_key]?.parent!]?.red!
-        {
-            var keyParent: UInt32 = self.nodes[key]?.parent!
-            if keyParent == self.nodes[self.nodes[keyParent]?.parent!]?.left {
-                cursor = self.nodes[self.nodes[keyParent]?.parent!]?.right!
+        while _key != self.root  && self.nodes[self.nodes[_key]?.parent!]?.red! {
+            var keyParent: UInt32 = self.nodes[_key]?.parent!
+            var keyGrandparent: UInt32 = self.nodes[keyParent]?.parent!
+
+            if keyParent == self.nodes[keyGrandparent]?.left {
+                cursor = self.nodes[keyGrandparent]?.right!
                 if self.nodes[cursor]?.red! {
                     self.nodes[keyParent]?.changeColor(red: false)
                     self.nodes[cursor]?.changeColor(red: false)
-                    self.nodes[self.nodes[keyParent]?.parent!]?.changeColor(red: true)
-                    _key = self.nodes[keyParent]?.parent!
+                    self.nodes[keyGrandparent]?.changeColor(red: true)
+                    _key = keyGrandparent
                 } else {
-                    if key == self.nodes[keyParent]?.right {
+                    if _key == self.nodes[keyParent]?.right {
                         _key = keyParent
-                        self._rotateLeft(key: key)
+                        self._rotateLeft(key: _key)
                     }
-                    keyParent = self.nodes[key]?.parent!
+                    keyParent = self.nodes[_key]?.parent!
                     self.nodes[keyParent]?.changeColor(red: false)
-                    self.nodes[self.nodes[keyParent]?.parent!]?.changeColor(red: true)
-                    self._rotateRight(key: self.nodes[keyParent]?.parent!)
+                    self.nodes[keyGrandparent]?.changeColor(red: true)
+                    self._rotateRight(key: keyGrandparent)
                 }
             } else {
-                cursor = self.nodes[self.nodes[keyParent]?.parent!]?.left!
+                cursor = self.nodes[keyGrandparent]?.left!
                 if self.nodes[cursor]?.red! {
                     self.nodes[keyParent]?.changeColor(red: false)
                     self.nodes[cursor]?.changeColor(red: false)
-                    self.nodes[self.nodes[keyParent]?.parent!]?.changeColor(red: true)
-                    _key = self.nodes[keyParent]?.parent!
+                    self.nodes[keyGrandparent]?.changeColor(red: true)
+                    _key = keyGrandparent
                 } else {
-                    if key == self.nodes[keyParent]?.left {
+                    if _key == self.nodes[keyParent]?.left {
                         _key = keyParent
-                        self._rotateRight(key: key)
+                        self._rotateRight(key: _key)
                     }
-                    keyParent = self.nodes[key]?.parent!
+                    keyParent = self.nodes[_key]?.parent!
                     self.nodes[keyParent]?.changeColor(red: false)
-                    self.nodes[self.nodes[keyParent]?.parent!]?.changeColor(red: true)
-                    self._rotateLeft(key: self.nodes[keyParent]?.parent!)
+                    self.nodes[keyGrandparent]?.changeColor(red: true)
+                    self._rotateLeft(key: keyGrandparent)
                 }
             }
         }
         self.nodes[self.root]?.changeColor(red: false)
     }
 
-    pub fun _removeFixup(var key: UInt32) {
+    pub fun _removeFixup(key: UInt32) {
+        log(key)
         var _key: UInt32 = key
         var cursor: UInt32 = self.EMPTY
         while _key != self.root && !self.nodes[_key]?.red! {
@@ -375,10 +336,7 @@ access(all) contract RedBlackTree {
                     cursor = self.nodes[keyParent]?.right!
                 }
 
-                if 
-                    !self.nodes[self.nodes[cursor]?.left!]?.red! &&
-                    !self.nodes[self.nodes[cursor]?.right!]?.red!
-                {
+                if (!self.nodes[self.nodes[cursor]?.left!]?.red! && !self.nodes[self.nodes[cursor]?.right!]?.red!) {
                     self.nodes[cursor]?.changeColor(red: true)
                     _key = keyParent
                 } else {
@@ -405,10 +363,7 @@ access(all) contract RedBlackTree {
                     self._rotateRight(key: keyParent)
                     cursor = self.nodes[keyParent]?.left!
                 }
-                if 
-                    !self.nodes[self.nodes[cursor]?.left!]?.red! &&
-                    !self.nodes[self.nodes[cursor]?.right!]?.red!
-                {
+                if !self.nodes[self.nodes[cursor]?.left!]?.red! && !self.nodes[self.nodes[cursor]?.right!]?.red! {
                     self.nodes[cursor]?.changeColor(red: true)
                     _key = keyParent
                 } else {

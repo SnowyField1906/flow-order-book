@@ -1,4 +1,4 @@
-pub contract SimpleMarket {
+pub contract OrderBook {
     
     pub let offers:       @{UInt32: Offer}
     pub let ids:           {UInt32: Node}
@@ -249,8 +249,8 @@ pub contract SimpleMarket {
     }
 
     pub fun comparePrice(_ a: UInt32, _ b: UInt32): Int16 {
-        let offer0: &SimpleMarket.Offer? = &self.offers[a] as &Offer?
-        let offer1: &SimpleMarket.Offer? = &self.offers[b] as &Offer?
+        let offer0: &OrderBook.Offer? = &self.offers[a] as &Offer?
+        let offer1: &OrderBook.Offer? = &self.offers[b] as &Offer?
 
         // log("comparing: ".concat(a.toString()).concat(" and ").concat(b.toString()))
 
@@ -274,12 +274,12 @@ pub contract SimpleMarket {
     }
 
     pub fun inorderTraversal(_ current: UInt32) {
-        if SimpleMarket.ids[current] == nil {
+        if OrderBook.ids[current] == nil {
             return
         }
-        self.inorderTraversal(SimpleMarket.ids[current]!.left)
+        self.inorderTraversal(OrderBook.ids[current]!.left)
         log(current)
-        self.inorderTraversal(SimpleMarket.ids[current]!.right)
+        self.inorderTraversal(OrderBook.ids[current]!.right)
     }
 }
  

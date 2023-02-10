@@ -18,7 +18,7 @@ describe("Linked list", () => {
     let signers, currentID
 
     beforeAll(async () => {
-        const basePath = path.resolve(__dirname, "./../../");
+        const basePath = path.resolve(__dirname, "./../../archive");
         const logging = false;
 
         await init(basePath);

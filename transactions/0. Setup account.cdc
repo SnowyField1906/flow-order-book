@@ -1,13 +1,13 @@
-import SimpleMarket from "./../contracts/SimpleMarket.cdc"
-import Token0 from "./../contracts/SimpleMarket.cdc"
-import Token1 from "./../contracts/SimpleMarket.cdc"
+import OrderBook from "./../contracts/OrderBook.cdc"
+import Token0 from "./../contracts/OrderBook.cdc"
+import Token1 from "./../contracts/OrderBook.cdc"
 
 transaction {
     prepare(acct: AuthAccount) {
-        let newUser <- SimpleMarket.createUser()
-        acct.save<@SimpleMarket.User>(<-newUser, to: /storage/User)
+        let newUser <- OrderBook.createUser()
+        acct.save<@OrderBook.User>(<-newUser, to: /storage/User)
 
-        let capability = acct.link<&SimpleMarket.User>(/public/User, target: /storage/User)
+        let capability = acct.link<&OrderBook.User>(/public/User, target: /storage/User)
         let userRef = capability!.borrow()
 
 

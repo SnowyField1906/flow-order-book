@@ -1,4 +1,4 @@
-import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+import OrderBook from "./../contracts/OrderBook.cdc"
 
 transaction(id: UInt32, quantity: UFix64) {
 
@@ -9,7 +9,7 @@ transaction(id: UInt32, quantity: UFix64) {
     }
 
     execute {
-        let offer = SimpleMarket.buy(id, quantity)    
+        let offer = OrderBook.buy(id, quantity)    
     }
 }
  

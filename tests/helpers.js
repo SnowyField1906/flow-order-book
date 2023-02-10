@@ -1,15 +1,13 @@
-export const contractNames = ["SimpleMarket"]
+export const contractNames = ["OrderBook"]
 
 export const scriptNames = [
-    "0. Load all offers",
-    "1. Load all offer ids",
-    "2. Load all offer prices",
+    "0. Load ordered offer list",
+    "1. Load ordered id list",
+    "2. Load sorted id list",
     "3. Load offer detail",
-    "4. Load user balance",
-    "5. Load id detail",
-    "6. Load adjacent ids",
-    "7. Load current id",
-    "8. Load higher & lower prices"
+    "4. Load id detail",
+    "5. Load current offer",
+    "6. Load current id",
 ]
 
 export const transactionNames = [
@@ -18,11 +16,11 @@ export const transactionNames = [
     "2. Buy",
 ]
 
-export const addressMap = { Profile: "0xf8d6e0586b0a20c7" }
+export const addressMap = { OrderBook: "0xf8d6e0586b0a20c7" }
 
 export const transactionTemplates = [
     ``,
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
     transaction(payAmount: UFix64, buyAmount: UFix64) {
     
@@ -33,10 +31,10 @@ export const transactionTemplates = [
         }
     
         execute {
-            let offer = SimpleMarket.makeOffer(self.maker, payAmount, buyAmount)    
+            let offer = OrderBook.makeOffer(self.maker, payAmount, buyAmount)    
         }
     }`,
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
     transaction(id: UInt32, quantity: UFix64) {
     
@@ -47,51 +45,51 @@ export const transactionTemplates = [
         }
     
         execute {
-            let offer = SimpleMarket.buy(id, quantity)    
+            let offer = OrderBook.buy(id, quantity)    
         }
     }`
 ]
 
 export const scriptTemplates = [
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
-    pub fun main(): &{UInt32: SimpleMarket.Offer}? {
-        return &SimpleMarket.offers as &{UInt32: SimpleMarket.Offer}?
+    pub fun main(): &{UInt32: OrderBook.Offer}? {
+        return &OrderBook.offers as &{UInt32: OrderBook.Offer}?
     }`,
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
     pub fun main(): [UInt32] {
         let ids: [UInt32] = []
     
-        var current = SimpleMarket.current
+        var current = OrderBook.current
         fun inorder(_ current: UInt32) {
             if current == 0 {
                 return
             }
-            inorder(SimpleMarket.ids[current]?.left!)
+            inorder(OrderBook.ids[current]?.left!)
             ids.append(current)
-            inorder(SimpleMarket.ids[current]?.left!)
+            inorder(OrderBook.ids[current]?.left!)
         }
     
         return ids
     }`,
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
     pub fun main(): [UFix64] {
         let ids: [UFix64] = []
     
-        var current = SimpleMarket.current
+        var current = OrderBook.current
         while (current != 0) {
-            ids.append(SimpleMarket.getPrice(current))
-            current = SimpleMarket.ids[current]!.right
+            ids.append(OrderBook.getPrice(current))
+            current = OrderBook.ids[current]!.right
         }
     
         return ids
     }`,
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
-    pub fun main(id: UInt32): &SimpleMarket.Offer? {
-        return &SimpleMarket.offers[id] as &SimpleMarket.Offer?
+    pub fun main(id: UInt32): &OrderBook.Offer? {
+        return &OrderBook.offers[id] as &OrderBook.Offer?
     }`,
     `import Token0 from 0xf8d6e0586b0a20c7
     import Token1 from 0xf8d6e0586b0a20c7
@@ -108,24 +106,24 @@ export const scriptTemplates = [
     
         return [userRef0.balance, userRef1.balance]
     }`,
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
-    pub fun main(id: UInt32): SimpleMarket.Node? {
-        return SimpleMarket.ids[id]
+    pub fun main(id: UInt32): OrderBook.Node? {
+        return OrderBook.ids[id]
     }`,
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
     pub fun main(id: UInt32): [UInt32] {
-        return [SimpleMarket.ids[id]?.left!, SimpleMarket.ids[id]?.right!]
+        return [OrderBook.ids[id]?.left!, OrderBook.ids[id]?.right!]
     }`,
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
     pub fun main(): UInt32 {
-        return SimpleMarket.current
+        return OrderBook.current
     }`,
-    `import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+    `import OrderBook from "./../contracts/OrderBook.cdc"
 
     pub fun main(): [UInt16] {
-        return [SimpleMarket.lowerPrices, SimpleMarket.higherPrices]
+        return [OrderBook.lowerPrices, OrderBook.higherPrices]
     }`
 ]

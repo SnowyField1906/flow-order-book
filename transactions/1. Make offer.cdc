@@ -1,6 +1,6 @@
-import SimpleMarket from "./../contracts/SimpleMarket.cdc"
+import OrderBook from "./../contracts/OrderBook.cdc"
 
-transaction(payToken: Address, payAmount: UFix64, buyToken: Address, buyAmount: UFix64) {
+transaction(payAmount: UFix64, buyAmount: UFix64) {
 
     let maker: Address
 
@@ -9,7 +9,7 @@ transaction(payToken: Address, payAmount: UFix64, buyToken: Address, buyAmount: 
     }
 
     execute {
-        let offer = SimpleMarket.makeOffer(self.maker, payAmount, buyAmount)    
+        OrderBook.makeOffer(self.maker, payAmount: payAmount, buyAmount: buyAmount)    
     }
 }
  
