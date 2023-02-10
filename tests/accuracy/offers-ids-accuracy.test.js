@@ -33,31 +33,36 @@ describe("Offers & IDs", () => {
             uuid: '23',
             maker: '0xf8d6e0586b0a20c7',
             payAmount: '4.00000000',
-            buyAmount: '9.00000000'
+            buyAmount: '9.00000000',
+            isBid: true
         },
         {
             uuid: '24',
             maker: '0xf8d6e0586b0a20c7',
             payAmount: '2.00000000',
-            buyAmount: '3.00000000'
+            buyAmount: '3.00000000',
+            isBid: true
         },
         {
             uuid: '25',
             maker: '0xf8d6e0586b0a20c7',
             payAmount: '3.00000000',
-            buyAmount: '8.00000000'
+            buyAmount: '8.00000000',
+            isBid: true
         },
         {
             uuid: '26',
             maker: '0xf8d6e0586b0a20c7',
             payAmount: '2.00000000',
-            buyAmount: '5.00000000'
+            buyAmount: '5.00000000',
+            isBid: true
         },
         {
             uuid: '27',
             maker: '0xf8d6e0586b0a20c7',
             payAmount: '2.00000000',
-            buyAmount: '7.00000000'
+            buyAmount: '7.00000000',
+            isBid: true
         }
     ]
     const expectedIDs = {
@@ -111,7 +116,7 @@ describe("Offers & IDs", () => {
                 sendTransaction({
                     "code": await transactionTemplate(transactionNames[1]),
                     "signers": signers,
-                    "args": [+offer.payAmount, +offer.buyAmount]
+                    "args": [+offer.payAmount, +offer.buyAmount, offer.isBid]
                 })
             )
         })

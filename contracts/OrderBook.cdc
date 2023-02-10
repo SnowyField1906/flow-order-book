@@ -1,23 +1,49 @@
-pub contract OrderBook {
+pub contract OrderBookV2 {
     pub var current: UFix64
-    pub let idTree : RedBlackTree
-    pub let offers : @{UFix64: Offer}
+    pub let bidTree : RedBlackTree
+    pub let askTree : RedBlackTree
+    pub let bidOffers : @{UFix64: Offer}
+    pub let askOffers : @{UFix64: Offer}
 
     init() {
         self.current = 0.0
-        self.idTree = RedBlackTree()
-        self.offers <- {}
+        self.bidTree = RedBlackTree()
+        self.askTree = RedBlackTree()
+        self.bidOffers <- {}
+        self.askOffers <- {}
     }
 
-    pub fun makeOffer(_ maker: Address, payAmount: UFix64, buyAmount: UFix64) {
+    pub fun makeOffer(_ maker: Address, payAmount: UFix64, buyAmount: UFix64, isBid: Bool) {
         let id: UFix64 = buyAmount / payAmount
         let newOffer: @Offer <- create Offer(maker, payAmount: payAmount, buyAmount: buyAmount)
         
         if self.current == 0.0 {
             self.current = id
         }
-        self.idTree.insert(key: id)
-        self.offers[id] <-! newOffer
+        if isBid {
+            if (self.askTree.exists(key: id)) {
+                let offer: &Offer? = &self.askOffers[id] as &Offer?
+                offer!.changeAmount(payAmount: offer!.payAmount - payAmount, buyAmount: offer!.buyAmount - buyAmount)
+                if (offer!.payAmount == 0.0 || offer!.buyAmount == 0.0) {
+                    self.askTree.remove(key: id)
+                    destroy self.askOffers.remove(key: id)
+                }
+            }
+            self.bidTree.insert(key: id)
+            self.bidOffers[id] <-! newOffer
+
+        } else {
+            if (self.bidTree.exists(key: id)) {
+                let offer: &Offer? = &self.bidOffers[id] as &Offer?
+                offer!.changeAmount(payAmount: offer!.payAmount - payAmount, buyAmount: offer!.buyAmount - buyAmount)
+                if (offer!.payAmount == 0.0 || offer!.buyAmount == 0.0) {
+                    self.bidTree.remove(key: id)
+                    destroy self.bidOffers.remove(key: id)
+                }
+            }
+            self.askTree.insert(key: id)
+            self.askOffers[id] <-! newOffer
+        }
     }
 
     pub fun buy(quantity: UFix64) {
@@ -26,16 +52,16 @@ pub contract OrderBook {
         var id: UFix64 = self.current
 
         while buyQuantity > 0.0 && id != 0.0 {
-            let offer: &Offer? = &self.offers[id] as &Offer?
+            let offer: &Offer? = &self.askOffers[id] as &Offer?
             let payAmount: UFix64 = offer!.payAmount
             let buyAmount: UFix64 = offer!.buyAmount
 
             if buyAmount <= buyQuantity {
                 payQuantity = payQuantity + payAmount
                 buyQuantity = buyQuantity - buyAmount
-                id = self.idTree.next(target: id)
-                self.idTree.remove(key: id)
-                destroy self.offers.remove(key: id)
+                id = self.askTree.next(target: id)
+                self.askTree.remove(key: id)
+                destroy self.askOffers.remove(key: id)
                 
             } else {
                 payQuantity = (buyAmount - buyQuantity) / id
@@ -45,6 +71,33 @@ pub contract OrderBook {
         }
         self.current = id
     }
+
+    pub fun sell(quantity: UFix64) {
+        var sellQuantity: UFix64 = quantity
+        var payQuantity: UFix64 = 0.0
+        var id: UFix64 = self.current
+
+        while sellQuantity > 0.0 && id != 0.0 {
+            let offer: &Offer? = &self.bidOffers[id] as &Offer?
+            let payAmount: UFix64 = offer!.payAmount
+            let buyAmount: UFix64 = offer!.buyAmount
+
+            if payAmount <= sellQuantity {
+                payQuantity = payQuantity + payAmount
+                sellQuantity = sellQuantity - buyAmount
+                id = self.bidTree.next(target: id)
+                self.bidTree.remove(key: id)
+                destroy self.bidOffers.remove(key: id)
+                
+            } else {
+                payQuantity = (payAmount - sellQuantity) / id
+                sellQuantity = 0.0
+                offer!.changeAmount(payAmount: payAmount - payQuantity, buyAmount: buyAmount - payQuantity / id)
+            }
+        }
+        self.current = id
+    }
+
 
 
     pub resource Offer {
@@ -99,11 +152,12 @@ pub contract OrderBook {
 
         pub(set) var root: UFix64
         pub(set) var nodes: {UFix64: Node}
+
             
         init() {
             self.EMPTY = 0.0
             self.root = self.EMPTY
-            self.nodes = {0.0 : OrderBook.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
+            self.nodes = {0.0 : OrderBookV2.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
         }
 
 

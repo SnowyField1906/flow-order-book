@@ -1,6 +1,6 @@
-import OrderBook from "./../contracts/OrderBook.cdc"
+import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
 
-transaction(payAmount: UFix64, buyAmount: UFix64) {
+transaction(payAmount: UFix64, buyAmount: UFix64, isBid: Bool) {
 
     let maker: Address
 
@@ -9,7 +9,7 @@ transaction(payAmount: UFix64, buyAmount: UFix64) {
     }
 
     execute {
-        OrderBook.makeOffer(self.maker, payAmount: payAmount, buyAmount: buyAmount)    
+        OrderBookV2.makeOffer(self.maker, payAmount: payAmount, buyAmount: buyAmount, isBid: isBid)    
     }
 }
  
