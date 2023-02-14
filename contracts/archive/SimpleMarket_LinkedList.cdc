@@ -1,4 +1,4 @@
-pub contract OrderBookV2 {
+pub contract OrderBookV6 {
     
     pub let offers:       @{UInt32: Offer}
     pub let ids:           {UInt32: Node}
@@ -34,7 +34,7 @@ pub contract OrderBookV2 {
     }
 
 
-    pub fun makeOffer(_ maker: Address, _ payToken: Address,
+    pub fun limitOrder(_ maker: Address, _ payToken: Address,
         _ payAmount: UFix64, _ buyToken: Address, _ buyAmount: UFix64
     ): &Offer? {
         let id: UInt32 = UInt32(getCurrentBlock().timestamp)
@@ -50,7 +50,7 @@ pub contract OrderBookV2 {
     }
 
 
-    pub fun buy(_ id: UInt32, _ quantity: UFix64) {
+    pub fun marketOrder(_ id: UInt32, _ quantity: UFix64) {
         let cost     : UFix64 = self.offers[id]?.buyAmount! * quantity / self.offers[id]?.payAmount!
         let payAmount: UFix64 = self.offers[id]?.payAmount! - quantity
         let buyAmount: UFix64 = self.offers[id]?.buyAmount! - cost
@@ -240,8 +240,8 @@ pub contract OrderBookV2 {
 
 
     pub fun comparePrice(_ a: UInt32, _ b: UInt32): Int16 {
-        let offer0: &OrderBookV2.Offer? = &self.offers[a] as &Offer?
-        let offer1: &OrderBookV2.Offer? = &self.offers[b] as &Offer?
+        let offer0: &OrderBookV6.Offer? = &self.offers[a] as &Offer?
+        let offer1: &OrderBookV6.Offer? = &self.offers[b] as &Offer?
 
         if offer0 == nil || offer1 == nil {
             return -2

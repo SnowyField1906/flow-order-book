@@ -1,4 +1,4 @@
-import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
 transaction(id: UInt32, quantity: UFix64) {
 
@@ -9,7 +9,7 @@ transaction(id: UInt32, quantity: UFix64) {
     }
 
     execute {
-        let offer = OrderBookV2.buy(id, quantity)    
+        let offer = OrderBookV6.marketOrder(id, quantity)    
     }
 }
  

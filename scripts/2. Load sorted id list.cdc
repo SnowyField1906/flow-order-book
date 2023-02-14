@@ -1,4 +1,4 @@
-import OrderBookV2 from "../OrderBookV2.cdc"
+import OrderBookV6 from "../OrderBookV6.cdc"
 
 access(all) var keys: [UFix64] = []
 
@@ -7,13 +7,13 @@ pub fun inorder(key: UFix64?) {
         return;
     }
     
-    inorder(key: OrderBookV2.idTree.nodes[key!]?.left);
+    inorder(key: OrderBookV6.idTree.nodes[key!]?.left);
     keys.append(key!)
-    inorder(key: OrderBookV2.idTree.nodes[key!]?.right);
+    inorder(key: OrderBookV6.idTree.nodes[key!]?.right);
 }
 
 pub fun main(): [UFix64] {
-    inorder(key: OrderBookV2.idTree.root)
+    inorder(key: OrderBookV6.idTree.root)
     
     return keys
 }

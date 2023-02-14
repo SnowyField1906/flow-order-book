@@ -1,13 +1,13 @@
-import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
-import Token0 from "./../contracts/OrderBookV2.cdc"
-import Token1 from "./../contracts/OrderBookV2.cdc"
+import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
+import Token0 from "./../contracts/OrderBookV6.cdc"
+import Token1 from "./../contracts/OrderBookV6.cdc"
 
 transaction {
     prepare(acct: AuthAccount) {
-        let newUser <- OrderBookV2.createUser()
-        acct.save<@OrderBookV2.User>(<-newUser, to: /storage/User)
+        let newUser <- OrderBookV6.createUser()
+        acct.save<@OrderBookV6.User>(<-newUser, to: /storage/User)
 
-        let capability = acct.link<&OrderBookV2.User>(/public/User, target: /storage/User)
+        let capability = acct.link<&OrderBookV6.User>(/public/User, target: /storage/User)
         let userRef = capability!.borrow()
 
 

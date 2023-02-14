@@ -1,4 +1,4 @@
-export const contractNames = ["OrderBookV2"]
+export const contractNames = ["OrderBookV6"]
 
 export const scriptNames = [
     "0. Load ordered offer list",
@@ -16,11 +16,11 @@ export const transactionNames = [
     "2. Buy",
 ]
 
-export const addressMap = { OrderBookV2: "0xf8d6e0586b0a20c7" }
+export const addressMap = { OrderBookV6: "0xf8d6e0586b0a20c7" }
 
 export const transactionTemplates = [
     ``,
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
     transaction(payAmount: UFix64, buyAmount: UFix64) {
     
@@ -31,10 +31,10 @@ export const transactionTemplates = [
         }
     
         execute {
-            let offer = OrderBookV2.makeOffer(self.maker, payAmount, buyAmount)    
+            let offer = OrderBookV6.limitOrder(self.maker, payAmount, buyAmount)    
         }
     }`,
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
     transaction(id: UInt32, quantity: UFix64) {
     
@@ -45,51 +45,51 @@ export const transactionTemplates = [
         }
     
         execute {
-            let offer = OrderBookV2.buy(id, quantity)    
+            let offer = OrderBookV6.marketOrder(id, quantity)    
         }
     }`
 ]
 
 export const scriptTemplates = [
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
-    pub fun main(): &{UInt32: OrderBookV2.Offer}? {
-        return &OrderBookV2.offers as &{UInt32: OrderBookV2.Offer}?
+    pub fun main(): &{UInt32: OrderBookV6.Offer}? {
+        return &OrderBookV6.offers as &{UInt32: OrderBookV6.Offer}?
     }`,
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
     pub fun main(): [UInt32] {
         let ids: [UInt32] = []
     
-        var current = OrderBookV2.current
+        var current = OrderBookV6.current
         fun inorder(_ current: UInt32) {
             if current == 0 {
                 return
             }
-            inorder(OrderBookV2.ids[current]?.left!)
+            inorder(OrderBookV6.ids[current]?.left!)
             ids.append(current)
-            inorder(OrderBookV2.ids[current]?.left!)
+            inorder(OrderBookV6.ids[current]?.left!)
         }
     
         return ids
     }`,
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
     pub fun main(): [UFix64] {
         let ids: [UFix64] = []
     
-        var current = OrderBookV2.current
+        var current = OrderBookV6.current
         while (current != 0) {
-            ids.append(OrderBookV2.getPrice(current))
-            current = OrderBookV2.ids[current]!.right
+            ids.append(OrderBookV6.getPrice(current))
+            current = OrderBookV6.ids[current]!.right
         }
     
         return ids
     }`,
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
-    pub fun main(id: UInt32): &OrderBookV2.Offer? {
-        return &OrderBookV2.offers[id] as &OrderBookV2.Offer?
+    pub fun main(id: UInt32): &OrderBookV6.Offer? {
+        return &OrderBookV6.offers[id] as &OrderBookV6.Offer?
     }`,
     `import Token0 from 0xf8d6e0586b0a20c7
     import Token1 from 0xf8d6e0586b0a20c7
@@ -106,24 +106,24 @@ export const scriptTemplates = [
     
         return [userRef0.balance, userRef1.balance]
     }`,
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
-    pub fun main(id: UInt32): OrderBookV2.Node? {
-        return OrderBookV2.ids[id]
+    pub fun main(id: UInt32): OrderBookV6.Node? {
+        return OrderBookV6.ids[id]
     }`,
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
     pub fun main(id: UInt32): [UInt32] {
-        return [OrderBookV2.ids[id]?.left!, OrderBookV2.ids[id]?.right!]
+        return [OrderBookV6.ids[id]?.left!, OrderBookV6.ids[id]?.right!]
     }`,
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
     pub fun main(): UInt32 {
-        return OrderBookV2.current
+        return OrderBookV6.current
     }`,
-    `import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+    `import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
     pub fun main(): [UInt16] {
-        return [OrderBookV2.lowerPrices, OrderBookV2.higherPrices]
+        return [OrderBookV6.lowerPrices, OrderBookV6.higherPrices]
     }`
 ]

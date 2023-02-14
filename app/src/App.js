@@ -6,7 +6,7 @@ import getSortedIDs from "./scripts/getSortedIDs";
 
 import AddingFiller from "./components/AddingFiller";
 import Loggingin from "./components/Loggingin";
-import Offer from "./components/Offer";
+import Order from "./components/Order";
 
 function App() {
   const [bidIDs, setBidISs] = useState([]);
@@ -26,22 +26,23 @@ function App() {
     fetchBidIDs();
     fetchAskIDs();
   }, []);
+
   return (
     <div className="grid">
       <Loggingin />
       <div className="flex mx-20">
         <div className="grid w-1/2">
           {
-            bidIDs.length !== 0
-              ? bidIDs.map((id) => {
-                return <Offer id={id} isBid={true} />;
+            askIDs.length !== 0
+              ? askIDs.map((id) => {
+                return <Order id={id} isBid={false} />;
               })
               : <div>Loading...</div>
           }
           {
-            askIDs.length !== 0
-              ? askIDs.map((id) => {
-                return <Offer id={id} isBid={false} />;
+            bidIDs.length !== 0
+              ? bidIDs.map((id) => {
+                return <Order id={id} isBid={true} />;
               })
               : <div>Loading...</div>
           }

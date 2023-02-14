@@ -1,0 +1,29 @@
+import { useState, useEffect } from "react";
+import getOfferDetail from "../scripts/getOfferDetail";
+import * as fcl from "@onflow/fcl";
+
+function Order({ id, isBid }) {
+    const [detail, setDetail] = useState({});
+    useEffect(() => {
+        getOfferDetail(id, isBid).then((res) => {
+            setDetail(res);
+        });
+    }, []);
+
+
+    const detailcolor = isBid ? "bg-green-600 " : "bg-red-600";
+
+
+    return (
+        <div className="flex place-items-center">
+            <div className={`${detailcolor} grid grid-cols-2 w-1/3 h-min p-2 my-2 px-4 cursor-pointer`}>
+                <p className="w-full my-auto text-white text-left font-bold text-lg">{id}</p>
+                <p className="w-full my-auto text-white text-right text-sm">{parseFloat(detail.amount)}</p>
+            </div>
+            <div className='pl-5 cursor-pointer'>Cancel</div>
+        </div>
+    )
+
+}
+
+export default Order

@@ -1,5 +1,5 @@
-import OrderBookV2 from "./../contracts/OrderBookV2.cdc"
+import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
 
-pub fun main(): &OrderBookV2.Offer? {
-    return &OrderBookV2.offers[OrderBookV2.idTree.root] as &OrderBookV2.Offer?
+pub fun main(): &OrderBookV6.Offer? {
+    return &OrderBookV6.offers[OrderBookV6.idTree.root] as &OrderBookV6.Offer?
 }
