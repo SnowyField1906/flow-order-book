@@ -1,10 +1,10 @@
-import OrderBookV6 from 0x9d380238fdd484d7
+import OrderBookV7 from 0x9d380238fdd484d7
 import FlowToken from 0x7e60df042a9c0868
 import SnowToken from 0x9d380238fdd484d7
 
 transaction {
     prepare(acct: AuthAccount) {
-        let capability = acct.link<&OrderBookV6.User>(/public/User, target: /storage/User)
+        let capability = acct.link<&OrderBookV7.User>(/public/User, target: /storage/User)
         let userRef = capability!.borrow()
 
 

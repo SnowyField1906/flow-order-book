@@ -5,7 +5,7 @@ import "./flow.config";
 import getSortedIDs from "./scripts/getSortedIDs";
 
 import AddingFiller from "./components/AddingFiller";
-import Account from "./components/Account";
+import Header from "./components/Header";
 import Order from "./components/Order";
 
 function App() {
@@ -29,7 +29,7 @@ function App() {
 
   return (
     <div className="grid">
-      <Account />
+      <Header />
       <div className="flex mx-20">
         <div className="grid w-1/2">
           {

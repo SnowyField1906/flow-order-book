@@ -1,4 +1,4 @@
-pub contract OrderBookV6 {
+pub contract OrderBookV7 {
     pub var current: UFix64
     pub let bidTree : RedBlackTree
     pub let askTree : RedBlackTree
@@ -61,22 +61,22 @@ pub contract OrderBookV6 {
         }
     }
 
-    pub fun marketOrder(quantity: UFix64, isBid: Bool) {
+    pub fun marketOrder(quantity: UFix64, isBid: Bool): UFix64 {
         var _quantity: UFix64 = quantity
-        var pay: UFix64 = 0.0
+        var payAmount: UFix64 = 0.0
         var price: UFix64 = self.current
 
         if isBid {
             while _quantity > 0.0 && price != 0.0 {
                 if self.askOffers[price]!.amount <= _quantity {
-                    pay = pay + self.askOffers[price]!.amount * price
+                    payAmount = payAmount + self.askOffers[price]!.amount * price
                     _quantity = _quantity - self.askOffers[price]!.amount
                     price = self.askTree.next(target: price)
                     self.askTree.remove(key: price)
                     self.askOffers.remove(key: price)
                 } else {
                     self.askOffers[price]!.changeAmount(amount: self.askOffers[price]!.amount - _quantity)
-                    pay = pay + _quantity / price
+                    payAmount = payAmount + _quantity / price
                     break
                 }
             }
@@ -84,19 +84,31 @@ pub contract OrderBookV6 {
         else {
             while _quantity > 0.0 && price != 0.0 {
                 if self.bidOffers[price]!.amount <= _quantity {
-                    pay = pay + self.bidOffers[price]!.amount * price
+                    payAmount = payAmount + self.bidOffers[price]!.amount * price
                     _quantity = _quantity - self.bidOffers[price]!.amount
                     price = self.askTree.next(target: price)
                     self.askTree.remove(key: price)
                     self.bidOffers.remove(key: price)
                 } else {
                     self.bidOffers[price]!.changeAmount(amount: self.bidOffers[price]!.amount - _quantity)
-                    pay = pay + _quantity / price
+                    payAmount = payAmount + _quantity / price
                     break
                 }
             }
         }
         self.current = price
+        return payAmount
+    }
+
+    pub fun cancelOrder(price: UFix64, isBid: Bool) {
+        if isBid {
+            self.bidTree.remove(key: price)
+            self.bidOffers.remove(key: price)
+        }
+        else {
+            self.askTree.remove(key: price)
+            self.askOffers.remove(key: price)
+        }
     }
 
 
@@ -154,7 +166,7 @@ pub contract OrderBookV6 {
         init() {
             self.EMPTY = 0.0
             self.root = self.EMPTY
-            self.nodes = {0.0 : OrderBookV6.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
+            self.nodes = {0.0 : OrderBookV7.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
         }
 
 

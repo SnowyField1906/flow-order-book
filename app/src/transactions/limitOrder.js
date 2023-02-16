@@ -10,49 +10,40 @@ export default async function limitOrder(price, amount, isBid) {
 }
 
 const OFFER_DETAILS = (price, amount, isBid) => `
-import OrderBookV6 from 0xOrderBookV6
+import OrderBookV7 from 0xOrderBookV7
+import OrderBookFlow from 0xOrderBookFlow
+import OrderBookFusd from 0xOrderBookFusd
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
 
 transaction() {
-
     let maker: Address
-    let sentVault: @FungibleToken.Vault
+    
+    let userFlowVaultRef: &FlowToken.Vault
+    let userFusdVaultRef: &FUSD.Vault
+    let contractFlowVault: &OrderBookFlow.Vault
+    let contractFusdVault: &OrderBookFusd.Vault
 
-    prepare(acct: AuthAccount) {
-        self.maker = acct.address
+    prepare(signer: AuthAccount) {
+        self.maker = signer.address
         
-        if isBid {
-            let vaultRef = acct.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
-            ?? panic("Could not borrow reference to the owner's Vault!")
+        self.userFlowVaultRef = signer.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
+        self.userFusdVaultRef = signer.borrow<&FUSD.Vault>(from: /storage/contractFusdVault)
 
-            self.sentVault <- vaultRef.withdraw(amount: UFix64(${(amount)}))
-        }
-        else {
-            let vaultRef = acct.borrow<&FUSD.Vault>(from: /storage/fusdVault)
-            ?? panic("Could not borrow reference to the owner's Vault!")
-
-            self.sentVault <- vaultRef.withdraw(amount: UFix64(${(amount)}))
-        }
+        self.contractFlowVault = signer.borrow<&OrderBookFlow.Vault>(from: OrderBookFlow.TokenStoragePath)
+        self.contractFusdVault = signer.borrow<&OrderBookFusd.Vault>(from: OrderBookFusd.TokenStoragePath)
     }
 
     execute {
-        OrderBookV6.limitOrder(self.maker, price: UFix64(${(price)}), amount: UFix64(${(amount)}), isBid: ${(isBid)})
-        let recipientAccount = getAccount(maker)
+        OrderBookV7.limitOrder(self.maker, price: UFix64(${(price)}), amount: UFix64(${(amount)}), isBid: ${(isBid)})
 
         if isBid {
-            let recipientVault = recipientAccount.getCapability(/public/fusdReceiver)
-                .borrow<&{FungibleToken.Receiver}>()
-                ?? panic("Could not borrow receiver reference to the recipient's Vault!")
-                
-            receiverRef.deposit(from: <-self.sentVault)
+            let tokenVault <- self.userFlowVaultRef.withdraw(amount: UFix64(${(amount)}) as! @FungibleToken.Vault
+            self.contractFlowVault.deposit(from: <- tokenVault)
         }
         else {
-            let recipientVault = recipientAccount.getCapability(/public/flowTokenReceiver)
-                .borrow<&{FungibleToken.Receiver}>()
-                ?? panic("Could not borrow receiver reference to the recipient's Vault!")
-
-            receiverRef.deposit(from: <-self.sentVault)
+            let tokenVault <- self.userFusdVaultRef.withdraw(amount: UFix64(${(amount)}) as! @FungibleToken.Vault
+            self.contractFusdVault.deposit(from: <- tokenVault)
         }
     }
 }

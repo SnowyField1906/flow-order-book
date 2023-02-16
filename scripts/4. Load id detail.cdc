@@ -1,7 +1,7 @@
-import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
+import OrderBookV7 from "./../contracts/OrderBookV7.cdc"
 
-pub fun main(id: UFix64): OrderBookV6.Node? {
+pub fun main(id: UFix64): OrderBookV7.Node? {
   
-  return OrderBookV6.idTree.nodes[id]
+  return OrderBookV7.idTree.nodes[id]
 }
  

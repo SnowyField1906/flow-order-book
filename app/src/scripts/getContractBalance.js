@@ -1,26 +1,21 @@
 import * as fcl from "@onflow/fcl";
 
-export default async function getCurrent() {
+export default async function getContractBalance() {
     return fcl.query({
-        cadence: CONTRACT_BALANCE,
+        cadence: CONTRACT_BALANCE(),
     });
 }
 
-const CONTRACT_BALANCE = `
-import SimpleMarket from 0x01
-import Token0 from 0x02
-import Token1 from 0x03
+const CONTRACT_BALANCE = () => `
+import OrderBookFlow from 0xOrderBookFlow
+import OrderBookFusd from 0xOrderBookFusd
+import FungibleToken from 0xFungibleToken
+import FlowToken from 0xFlowToken
+import FUSD from 0xFUSD
 
-pub fun main(user: Address) : [UFix64] {
-    let user = getAccount(user)
+pub fun main() : {String: UFix64} {
 
-    let userRef0 = user.getCapability(/public/Receiver0)
-                    .borrow<&Token0.Vault{Token0.Balance}>()
-                    ?? panic("Could not borrow a reference to the receiver")
-    let userRef1 = user.getCapability(/public/Receiver1)
-                    .borrow<&Token1.Vault{Token1.Balance}>()
-                    ?? panic("Could not borrow a reference to the receiver")
 
-    return [userRef0.balance, userRef1.balance]
+    return {"Flow": OrderBookFlow.getBalance(), "FUSD": OrderBookFusd.getBalance()}
 }
 `

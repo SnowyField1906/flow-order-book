@@ -1,5 +1,5 @@
-import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
+import OrderBookV7 from "./../contracts/OrderBookV7.cdc"
 
-pub fun main(id: UFix64): &OrderBookV6.Offer? {
-    return &OrderBookV6.offers[id] as &OrderBookV6.Offer?
+pub fun main(id: UFix64): &OrderBookV7.Offer? {
+    return &OrderBookV7.offers[id] as &OrderBookV7.Offer?
 }

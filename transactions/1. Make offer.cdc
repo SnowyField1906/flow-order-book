@@ -1,4 +1,4 @@
-import OrderBookV6 from "./../contracts/OrderBookV6.cdc"
+import OrderBookV7 from "./../contracts/OrderBookV7.cdc"
 
 transaction(payAmount: UFix64, buyAmount: UFix64, isBid: Bool) {
 
@@ -9,7 +9,7 @@ transaction(payAmount: UFix64, buyAmount: UFix64, isBid: Bool) {
     }
 
     execute {
-        OrderBookV6.limitOrder(self.maker, payAmount: payAmount, buyAmount: buyAmount, isBid: isBid)    
+        OrderBookV7.limitOrder(self.maker, payAmount: payAmount, buyAmount: buyAmount, isBid: isBid)    
     }
 }
  

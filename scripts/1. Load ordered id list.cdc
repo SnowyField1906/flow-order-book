@@ -1,5 +1,5 @@
-import OrderBookV6 from "../OrderBookV6.cdc"
+import OrderBookV7 from "../OrderBookV7.cdc"
 
 pub fun main(): [UFix64] {
-    return OrderBookV6.offers.keys
+    return OrderBookV7.offers.keys
 }
