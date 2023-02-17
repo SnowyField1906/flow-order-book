@@ -15,7 +15,7 @@ export default async function cancelOrder(price, isBid) {
 
 const CANCEL_ORDER = `
 import OrderBookV7 from 0xOrderBookV7
-import OrderBookVau
+import OrderBookVault from 0xOrderBookVault
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
