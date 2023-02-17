@@ -2,19 +2,20 @@ import * as fcl from "@onflow/fcl";
 
 export default async function checkSetup(address) {
     return fcl.query({
-        cadence: CHECK_SETUP(address),
+        cadence: CHECK_SETUP,
+        args: (arg, t) => [
+            arg(address, t.Address),
+        ],
     });
 }
 
-const CHECK_SETUP = (address) => `
-import OrderBookFlow from 0xOrderBookFlow
-import OrderBookFusd from 0xOrderBookFusd
+const CHECK_SETUP = `
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
 
-pub fun main(): Bool {
-    let signer = getAccount(${address})
+pub fun main(userAddress: Address): Bool {
+    let signer = getAccount(userAddress)
     let receiverRef = signer.getCapability(/public/fusdReceiver)!
     .borrow<&FUSD.Vault{FungibleToken.Receiver}>()
         ?? nil
@@ -23,14 +24,6 @@ pub fun main(): Bool {
         .borrow<&FUSD.Vault{FungibleToken.Balance}>()
         ?? nil
 
-    let flowRef = signer.getCapability(OrderBookFlow.TokenPublicReceiverPath)!
-        .borrow<&OrderBookFlow.Vault{FungibleToken.Receiver}>()
-        ?? nil
-
-    let fusdRef = signer.getCapability(OrderBookFusd.TokenPublicReceiverPath)!
-        .borrow<&OrderBookFusd.Vault{FungibleToken.Receiver}>()
-        ?? nil
-
-    return (receiverRef != nil) && (balanceRef != nil) && (flowRef != nil) && (fusdRef != nil)
+    return (receiverRef != nil) && (balanceRef != nil)
 }
 `

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import getOfferDetail from "../scripts/getOfferDetail";
+import cancelOrder from "../transactions/cancelOrder";
 import * as fcl from "@onflow/fcl";
 
 function Order({ id, isBid }) {
@@ -20,7 +21,8 @@ function Order({ id, isBid }) {
                 <p className="w-full my-auto text-white text-left font-bold text-lg">{id}</p>
                 <p className="w-full my-auto text-white text-right text-sm">{parseFloat(detail.amount)}</p>
             </div>
-            <div className='pl-5 cursor-pointer'>Cancel</div>
+            <div onClick={() => cancelOrder(id, isBid)}
+                className='pl-5 cursor-pointer'>Cancel</div>
         </div>
     )
 

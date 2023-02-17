@@ -9,7 +9,7 @@ export default async function setupAccount() {
     });
 }
 
-const SETUP_ACCOUNT = () => `
+const SETUP_ACCOUNT = `
 import OrderBookFlow from 0xOrderBookFlow
 import OrderBookFusd from 0xOrderBookFusd
 import FungibleToken from 0xFungibleToken

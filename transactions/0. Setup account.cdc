@@ -1,20 +1,26 @@
-import OrderBookV7 from 0x9d380238fdd484d7
-import FlowToken from 0x7e60df042a9c0868
-import SnowToken from 0x9d380238fdd484d7
+import OrderBookVaultV3 from 0xOrderBookVaultV3
+import FungibleToken from 0xFungibleToken
+import FlowToken from 0xFlowToken
+import FUSD from 0xFUSD
 
 transaction {
-    prepare(acct: AuthAccount) {
-        let capability = acct.link<&OrderBookV7.User>(/public/User, target: /storage/User)
-        let userRef = capability!.borrow()
+    prepare(signer: AuthAccount) {
+        if signer.borrow<&OrderBookVaultV3.TokenBundle>(from: OrderBookVaultV3.TokenStoragePath) == nil {
+            signer.save(<- OrderBookVaultV3.createTokenBundle(admins: [signer.address]), to: OrderBookVaultV3.TokenStoragePath)
+            signer.link<&OrderBookVaultV3.TokenBundle{OrderBookVaultV3.TokenBundlePublic}>(OrderBookVaultV3.TokenPublicPath, target: OrderBookVaultV3.TokenStoragePath)
+       }
 
+        if signer.borrow<&FUSD.Vault>(from: /storage/fusdVault) == nil {
+            signer.save(<-FUSD.createEmptyVault(), to: /storage/fusdVault)
+            signer.link<&FUSD.Vault{FungibleToken.Receiver}>(/public/fusdReceiver, target: /storage/fusdVault)
+            signer.link<&FUSD.Vault{FungibleToken.Balance}>(/public/fusdBalance, target: /storage/fusdVault)
+        }
 
-        let FlowVault <- FlowToken.createEmptyVault()
-		acct.save<@FlowToken.Vault>(<-FlowVault, to: /storage/FlowVault)
-		let ReceiverRef0 = acct.link<&FlowToken.Vault{FlowToken.Receiver, FlowToken.Balance}>(/public/Receiver0, target: /storage/Vault0)
-
-        let SnowVault <- SnowToken.createEmptyVault()
-		acct.save<@SnowToken.Vault>(<-SnowVault, to: /storage/SnowVault)
-		let ReceiverRef1 = acct.link<&SnowToken.Vault{SnowToken.Receiver, SnowToken.Balance}>(/public/Receiver1, target: /storage/SnowVault)
+        if signer.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault) == nil {
+            signer.save(<-FlowToken.createEmptyVault(), to: /storage/flowTokenVault)
+            signer.link<&FlowToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver, target: /storage/flowTokenVault)
+            signer.link<&FlowToken.Vault{FungibleToken.Balance}>(/public/flowTokenBalance, target: /storage/flowTokenVault)
+        }
     }
 
     execute {

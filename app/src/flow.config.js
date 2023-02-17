@@ -7,6 +7,7 @@ config({
     "app.detail.icon": "https://i.imgur.com/8KtjOsR.png",
     "app.detail.title": "Flow Order Book",
     "0xOrderBookV7": "0x9d380238fdd484d7",
+    "0xOrderBookVaultV3": "0x9d380238fdd484d7",
     "0xOrderBookFlow": "0x9d380238fdd484d7",
     "0xOrderBookFusd": "0x9d380238fdd484d7",
     "0xFlowToken": "0x7e60df042a9c0868",

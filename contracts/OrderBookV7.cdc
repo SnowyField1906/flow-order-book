@@ -100,14 +100,18 @@ pub contract OrderBookV7 {
         return payAmount
     }
 
-    pub fun cancelOrder(price: UFix64, isBid: Bool) {
+    pub fun cancelOrder(price: UFix64, isBid: Bool): UFix64 {
         if isBid {
+            let receiveAmount = price * self.bidOffers[price]!.amount
             self.bidTree.remove(key: price)
             self.bidOffers.remove(key: price)
+            return receiveAmount
         }
         else {
+            let receiveAmount = price * self.bidOffers[price]!.amount
             self.askTree.remove(key: price)
             self.askOffers.remove(key: price)
+            return receiveAmount
         }
     }
 

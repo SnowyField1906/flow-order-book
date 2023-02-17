@@ -1,20 +1,3 @@
-import * as fcl from "@onflow/fcl";
-
-export default async function limitOrder(price, amount, isBid) {
-    return fcl.mutate({
-        cadence: OFFER_DETAILS,
-        proposer: fcl.currentUser,
-        payer: fcl.currentUser,
-        authorizations: [fcl.currentUser],
-        args: (arg, t) => [
-            arg(price.toString(), t.UFix64),
-            arg(amount.toString(), t.UFix64),
-            arg(isBid, t.Bool),
-        ],
-    });
-}
-
-const OFFER_DETAILS = `
 import OrderBookV7 from 0xOrderBookV7
 import OrderBookVaultV3 from 0xOrderBookVaultV3
 import FlowToken from 0xFlowToken
@@ -35,18 +18,17 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
 
         if isBid {
           let vaultRef = signer.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)!
-          let userVault <- vaultRef.withdraw(amount: amount) as! @FlowToken.Vault
+          let userVault <- vaultRef.withdraw(amount: UFix64(amount)) as! @FlowToken.Vault
           contractVault.depositFlow(flowVault: <-userVault, admin: self.maker)
         }
         else {
           let vaultRef = signer.borrow<&FUSD.Vault>(from: /storage/fusdVault)!
-          let userVault <- vaultRef.withdraw(amount: amount) as! @FUSD.Vault
+          let userVault <- vaultRef.withdraw(amount: UFix64(amount)) as! @FUSD.Vault
           contractVault.depositFusd(fusdVault: <-userVault, admin: self.maker)
         }
     }
 
     execute {
-        OrderBookV7.limitOrder(self.maker, price: price, amount: amount, isBid: isBid)
+        OrderBookV7.limitOrder(self.maker, price: UFix64(price), amount: UFix64(amount), isBid: isBid)
     }
 }
-`
