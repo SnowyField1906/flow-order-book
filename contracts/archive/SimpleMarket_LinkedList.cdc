@@ -1,4 +1,4 @@
-pub contract OrderBookV7 {
+pub contract OrderBookV10 {
     
     pub let offers:       @{UInt32: Offer}
     pub let ids:           {UInt32: Node}
@@ -240,8 +240,8 @@ pub contract OrderBookV7 {
 
 
     pub fun comparePrice(_ a: UInt32, _ b: UInt32): Int16 {
-        let offer0: &OrderBookV7.Offer? = &self.offers[a] as &Offer?
-        let offer1: &OrderBookV7.Offer? = &self.offers[b] as &Offer?
+        let offer0: &OrderBookV10.Offer? = &self.offers[a] as &Offer?
+        let offer1: &OrderBookV10.Offer? = &self.offers[b] as &Offer?
 
         if offer0 == nil || offer1 == nil {
             return -2

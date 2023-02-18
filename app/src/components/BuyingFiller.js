@@ -1,6 +1,6 @@
 import React from 'react'
 
-function AddingFiller() {
+function LimitOrder() {
     return (
         <div className='grid gird-cols-2 grid-rows-2 w-full h-full '>
             <input type='text' placeholder='payAmount' className='rounded-xl border-2 border-blue-800 p-2 my-2' />
@@ -10,4 +10,4 @@ function AddingFiller() {
     )
 }
 
-export default AddingFiller
+export default LimitOrder

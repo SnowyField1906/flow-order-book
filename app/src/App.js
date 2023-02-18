@@ -4,13 +4,15 @@ import "./flow.config";
 
 import getSortedIDs from "./scripts/getSortedIDs";
 
-import AddingFiller from "./components/AddingFiller";
+import LimitOrder from "./components/LimitOrder";
 import Header from "./components/Header";
 import Order from "./components/Order";
 
 function App() {
   const [bidIDs, setBidISs] = useState([]);
   const [askIDs, setAskIDs] = useState([]);
+
+  const [address, setAddress] = useState("");
 
   useEffect(() => {
     async function fetchBidIDs() {
@@ -29,26 +31,26 @@ function App() {
 
   return (
     <div className="grid">
-      <Header />
+      <Header setAddress={setAddress} />
       <div className="flex mx-20">
         <div className="grid w-1/2">
           {
             askIDs.length !== 0
               ? askIDs.map((id) => {
-                return <Order id={id} isBid={false} />;
+                return <Order id={id} isBid={false} address={address} />;
               })
               : <div>Loading...</div>
           }
           {
             bidIDs.length !== 0
               ? bidIDs.map((id) => {
-                return <Order id={id} isBid={true} />;
+                return <Order id={id} isBid={true} address={address} />;
               })
               : <div>Loading...</div>
           }
         </div>
         <div className="grid w-1/2 place-items-center">
-          <AddingFiller />
+          <LimitOrder />
         </div>
       </div>
     </div>

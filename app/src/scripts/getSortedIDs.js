@@ -8,7 +8,7 @@ export default async function getSortedIDs(isBid) {
 
 
 const SORTED_IDS = (isBid) => isBid ? `
-import OrderBookV7 from 0xOrderBookV7
+import OrderBookV10 from 0xOrderBookV10
 access(all) var keys: [UFix64] = []
 
 pub fun inorder(key: UFix64?) {
@@ -16,19 +16,19 @@ pub fun inorder(key: UFix64?) {
         return
     }
     
-    inorder(key: OrderBookV7.bidTree.nodes[key!]?.right)
+    inorder(key: OrderBookV10.bidTree.nodes[key!]?.right)
     keys.append(key!)
-    inorder(key: OrderBookV7.bidTree.nodes[key!]?.left)
+    inorder(key: OrderBookV10.bidTree.nodes[key!]?.left)
 }
 
 pub fun main(): [UFix64] {
-    inorder(key: OrderBookV7.bidTree.root)
+    inorder(key: OrderBookV10.bidTree.root)
     
     return keys
 }
 ` :
     `
-import OrderBookV7 from 0xOrderBookV7
+import OrderBookV10 from 0xOrderBookV10
 access(all) var keys: [UFix64] = []
     
 pub fun inorder(key: UFix64?) {
@@ -36,13 +36,13 @@ pub fun inorder(key: UFix64?) {
         return;
     }
 
-    inorder(key: OrderBookV7.askTree.nodes[key!]?.right)
+    inorder(key: OrderBookV10.askTree.nodes[key!]?.right)
     keys.append(key!)
-    inorder(key: OrderBookV7.askTree.nodes[key!]?.left)
+    inorder(key: OrderBookV10.askTree.nodes[key!]?.left)
 }
     
 pub fun main(): [UFix64] {
-    inorder(key: OrderBookV7.askTree.root)
+    inorder(key: OrderBookV10.askTree.root)
 
     return keys
 }

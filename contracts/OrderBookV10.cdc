@@ -1,9 +1,9 @@
-pub contract OrderBookV7 {
+pub contract OrderBookV10 {
     pub var current: UFix64
     pub let bidTree : RedBlackTree
     pub let askTree : RedBlackTree
-    pub let bidOffers : {UFix64: Offer}
-    pub let askOffers : {UFix64: Offer}
+    pub(set) var bidOffers : {UFix64: Offer}
+    pub(set) var askOffers : {UFix64: Offer}
 
     init() {
         self.current = 0.0
@@ -20,44 +20,12 @@ pub contract OrderBookV7 {
             self.current = price
         }
         if isBid {
-            if !self.askTree.exists(key: price) {
-                self.bidOffers[price] = Offer(maker, amount: amount)
-                self.bidTree.insert(key: price)
-                return
-            }
-                        
-            if self.askOffers[price]!.amount > amount {
-                self.askOffers[price]!.changeAmount(amount: self.askOffers[price]!.amount - amount)
-                return
-            }
-
-            if self.askOffers[price]!.amount < amount {
-                self.bidOffers[price] = Offer(maker, amount: amount - self.askOffers[price]!.amount)
-                self.bidTree.insert(key: price)
-            }
-
-            self.askTree.remove(key: price)
-            self.askOffers.remove(key: price)
+            self.bidOffers[price] = Offer(maker, amount: amount)
+            self.bidTree.insert(key: price)
         }
         else {
-            if !self.bidTree.exists(key: price) {
-                self.askOffers[price] = Offer(maker, amount: amount)
-                self.askTree.insert(key: price)
-                return
-            }
-            
-            if self.bidOffers[price]!.amount > amount {
-                self.bidOffers[price]!.changeAmount(amount: self.bidOffers[price]!.amount - amount)
-                return
-            }
-
-            if self.bidOffers[price]!.amount < amount {
-                self.askOffers[price] = Offer(maker, amount: amount - self.bidOffers[price]!.amount)
-                self.askTree.insert(key: price)
-            }
-            
-            self.bidTree.remove(key: price)
-            self.bidOffers.remove(key: price)
+            self.askOffers[price] = Offer(maker, amount: amount)
+            self.askTree.insert(key: price)
         }
     }
 
@@ -105,10 +73,10 @@ pub contract OrderBookV7 {
             let receiveAmount = price * self.bidOffers[price]!.amount
             self.bidTree.remove(key: price)
             self.bidOffers.remove(key: price)
-            return receiveAmount
+            return receiveAmount * price
         }
         else {
-            let receiveAmount = price * self.bidOffers[price]!.amount
+            let receiveAmount = price * self.askOffers[price]!.amount
             self.askTree.remove(key: price)
             self.askOffers.remove(key: price)
             return receiveAmount
@@ -170,7 +138,7 @@ pub contract OrderBookV7 {
         init() {
             self.EMPTY = 0.0
             self.root = self.EMPTY
-            self.nodes = {0.0 : OrderBookV7.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
+            self.nodes = {0.0 : OrderBookV10.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
         }
 
 

@@ -35,11 +35,11 @@ describe("Offers & IDs", () => {
         await init(basePath);
         await emulator.start({ logging });
 
-        await deployContract({ name: "FungibleToken" })
-        await deployContract({ name: "FUSD" })
-        await deployContract({ name: "OrderBookVaultV3" })
-        await deployContract({ name: "OrderBookV7" })
-        // await deployContract({ name: "FlowToken" })
+        await deployContract({ name: "interfaces/FungibleToken" })
+        await deployContract({ name: "tokens/FUSD" })
+        // await deployContract({ name: "tokens/FlowToken" })
+        await deployContract({ name: "OrderBookVaultV8" })
+        await deployContract({ name: "OrderBookV10" })
 
         await shallPass(
             sendTransaction({

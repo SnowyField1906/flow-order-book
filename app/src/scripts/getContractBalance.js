@@ -7,12 +7,14 @@ export default async function getContractBalance() {
 }
 
 const CONTRACT_BALANCE = `
-import OrderBookVaultV3 from 0xOrderBookVaultV3
+import OrderBookVaultV8 from 0xOrderBookVaultV8
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
 
 pub fun main() : {String: UFix64} {
-    return {"Flow": OrderBookVaultV3.flowBalance, "FUSD": OrderBookVaultV3.fusdBalance}
+    let tokenBundle = getAccount(0xOrderBookVaultV8).getCapability(OrderBookVaultV8.TokenPublicPath).borrow<&OrderBookVaultV8.TokenBundle{OrderBookVaultV8.TokenBundlePublic}>()!
+
+    return {"Flow": tokenBundle.getFlowBalance(), "FUSD": tokenBundle.getFusdBalance()}
 }
 `

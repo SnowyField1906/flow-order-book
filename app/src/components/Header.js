@@ -6,7 +6,7 @@ import setupAccount from "../transactions/setupAccount";
 import checkSetup from "../scripts/checkSetup";
 import * as fcl from "@onflow/fcl";
 
-export default function Header() {
+export default function Header({ setAddress }) {
 
     const [user, setUser] = useState({ loggedIn: null })
     const [userBalance, setBalance] = useState({ Flow: null, FUSD: null })
@@ -20,6 +20,7 @@ export default function Header() {
                 ? getUserBalance(user?.addr).then(setBalance)
                 : setBalance({ Flow: null, FUSD: null })
             )
+        setAddress(user?.addr)
     }, [user.loggedIn])
 
 

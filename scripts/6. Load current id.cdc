@@ -1,5 +1,5 @@
-import OrderBookV7 from "./../contracts/OrderBookV7.cdc"
+import OrderBookV10 from "./../contracts/OrderBookV10.cdc"
 
 pub fun main(): UFix64 {
-    return OrderBookV7.idTree.root
+    return OrderBookV10.idTree.root
 }
