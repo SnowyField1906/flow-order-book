@@ -10,7 +10,7 @@ export default async function checkSetup(address) {
 }
 
 const CHECK_SETUP = `
-import OrderBookVaultV8 from 0xOrderBookVaultV8
+import OrderBookVaultV9 from 0xOrderBookVaultV9
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
@@ -18,8 +18,8 @@ import FUSD from 0xFUSD
 pub fun main(userAddress: Address): Bool {
     let signer = getAccount(userAddress)
 
-    let vaultRef = signer.getCapability(OrderBookVaultV8.TokenPublicPath)!
-        .borrow<&OrderBookVaultV8.TokenBundle{OrderBookVaultV8.TokenBundlePublic}>()
+    let vaultRef = signer.getCapability(OrderBookVaultV9.TokenPublicPath)!
+        .borrow<&OrderBookVaultV9.TokenBundle{OrderBookVaultV9.TokenBundlePublic}>()
         ?? nil
 
     let receiverRef = signer.getCapability(/public/fusdReceiver)!

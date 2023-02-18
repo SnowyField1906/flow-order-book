@@ -2,7 +2,7 @@ import FungibleToken from 0x9a0766d93b6608b7
 import FUSD from 0xe223d8a629e49c68
 import FlowToken from 0x7e60df042a9c0868
 
-pub contract OrderBookVaultV8 {
+pub contract OrderBookVaultV9 {
   pub let TokenStoragePath  : StoragePath
   pub let TokenPublicPath  : PublicPath
 
@@ -24,7 +24,7 @@ pub contract OrderBookVaultV8 {
     init(admins: [Address]) {
       self.admins = admins
       self.flowVault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
-      self.fusdVault <- FUSD.createEmptyVault() as! @FUSD.Vault
+      self.fusdVault <- FUSD.createEmptyVault()
     }
 
     pub fun depositFlow(flowVault: @FungibleToken.Vault, admin: Address) {
@@ -42,11 +42,11 @@ pub contract OrderBookVaultV8 {
     }
 
     pub fun withdrawFlow(amount: UFix64, admin: Address): @FungibleToken.Vault {
-      return <- (self.flowVault.withdraw(amount: amount) as! @FlowToken.Vault)
+      return <- self.flowVault.withdraw(amount: amount)
     }
 
     pub fun withdrawFusd(amount: UFix64, admin: Address): @FungibleToken.Vault {
-      return <- (self.fusdVault.withdraw(amount: amount) as! @FUSD.Vault)
+      return <- self.fusdVault.withdraw(amount: amount)
     }
 
     pub fun getFlowBalance(): UFix64 {
@@ -69,8 +69,8 @@ pub contract OrderBookVaultV8 {
 
   init() {
 
-    self.TokenPublicPath = /public/OrderBookVaultTokenV8
-    self.TokenStoragePath = /storage/OrderBookVaultTokenV8
+    self.TokenPublicPath = /public/OrderBookVaultTokenV9
+    self.TokenStoragePath = /storage/OrderBookVaultTokenV9
 
     self.account.save(<-create TokenBundle(admins: []), to: self.TokenStoragePath)
     self.account.link<&TokenBundle{TokenBundlePublic}>(self.TokenPublicPath, target: self.TokenStoragePath)

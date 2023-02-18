@@ -15,7 +15,7 @@ export default async function cancelOrder(price, isBid) {
 
 const CANCEL_ORDER = `
 import OrderBookV10 from 0xOrderBookV10
-import OrderBookVaultV8 from 0xOrderBookVaultV8
+import OrderBookVaultV9 from 0xOrderBookVaultV9
 import FungibleToken from 0xFungibleToken
 
 transaction(price: UFix64, isBid: Bool) {
@@ -24,18 +24,18 @@ transaction(price: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
         self.maker = signer.address
 
-        if signer.borrow<&OrderBookVaultV8.TokenBundle>(from: OrderBookVaultV8.TokenStoragePath) == nil {
-            signer.save(<- OrderBookVaultV8.createTokenBundle(admins: [signer.address]), to: OrderBookVaultV8.TokenStoragePath)
-            signer.link<&OrderBookVaultV8.TokenBundle{OrderBookVaultV8.TokenBundlePublic}>(OrderBookVaultV8.TokenPublicPath, target: OrderBookVaultV8.TokenStoragePath)
+        if signer.borrow<&OrderBookVaultV9.TokenBundle>(from: OrderBookVaultV9.TokenStoragePath) == nil {
+            signer.save(<- OrderBookVaultV9.createTokenBundle(admins: [signer.address]), to: OrderBookVaultV9.TokenStoragePath)
+            signer.link<&OrderBookVaultV9.TokenBundle{OrderBookVaultV9.TokenBundlePublic}>(OrderBookVaultV9.TokenPublicPath, target: OrderBookVaultV9.TokenStoragePath)
         }
 
         let receiveAmount = OrderBookV10.cancelOrder(price: price, isBid: isBid)
 
-        let contractVault = signer.borrow<&OrderBookVaultV8.TokenBundle>(from: OrderBookVaultV8.TokenStoragePath)!
+        let contractVault = signer.borrow<&OrderBookVaultV9.TokenBundle>(from: OrderBookVaultV9.TokenStoragePath)!
         if isBid {
             let userFlowVault = getAccount(self.maker).getCapability(/public/flowTokenReceiver)
                 .borrow<&{FungibleToken.Receiver}>()!
-            contractVault.withdrawFlow(amount: receiveAmount, admin: self.maker)
+            let contractFlowVault <- contractVault.withdrawFlow(amount: receiveAmount, admin: self.maker)
             userFlowVault.deposit(from: <-contractFlowVault)
         }
         else {

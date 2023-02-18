@@ -11,12 +11,13 @@ export default async function limitOrder(price, amount, isBid) {
       arg(amount.toString(), t.UFix64),
       arg(isBid, t.Bool),
     ],
+    limit: 1000,
   });
 }
 
 const OFFER_DETAILS = `
 import OrderBookV10 from 0xOrderBookV10
-import OrderBookVaultV8 from 0xOrderBookVaultV8
+import OrderBookVaultV9 from 0xOrderBookVaultV9
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
@@ -27,7 +28,7 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
         self.maker = signer.address
 
-        let contractVault = signer.borrow<&OrderBookVaultV8.TokenBundle>(from: OrderBookVaultV8.TokenStoragePath)!
+        let contractVault = signer.borrow<&OrderBookVaultV9.TokenBundle>(from: OrderBookVaultV9.TokenStoragePath)!
         let flowVaultRef = signer.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)!
         let fusdVaultRef = signer.borrow<&FUSD.Vault>(from: /storage/fusdVault)!
 
@@ -145,7 +146,7 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
 
                 // transfer FUSD from this order's to bid
                 let userFusdVault <- fusdVaultRef.withdraw(amount: OrderBookV10.bidOffers[price]!.amount)
-                let receiverFusdVault = getAccount(OrderBookV10.bidOffers[price]!.maker).getCapability(/public/fusdTokenReceiver)
+                let receiverFusdVault = getAccount(OrderBookV10.bidOffers[price]!.maker).getCapability(/public/fusdReceiver)
                   .borrow<&{FungibleToken.Receiver}>()!
                 receiverFusdVault.deposit(from: <- userFusdVault)
 
