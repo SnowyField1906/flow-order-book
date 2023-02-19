@@ -2,17 +2,20 @@ import * as fcl from "@onflow/fcl";
 
 export default async function getUserBalance(address) {
     return fcl.query({
-        cadence: USER_BALANCE(address),
+        cadence: USER_BALANCE,
+        args: (arg, t) => [
+            arg(address, t.Address),
+        ],
     });
 }
 
-const USER_BALANCE = (address) => `
+const USER_BALANCE = `
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
 
-pub fun main() : {String: UFix64} {
-    let user = getAccount(${address})
+pub fun main(userAddress: Address) : {String: UFix64} {
+    let user = getAccount(userAddress)
 
     let FlowRef = user.getCapability(/public/flowTokenBalance)
                     .borrow<&FlowToken.Vault{FungibleToken.Balance}>()

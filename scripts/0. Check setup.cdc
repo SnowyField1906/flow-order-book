@@ -1,4 +1,4 @@
-import OrderBookVaultV10 from 0xOrderBookVaultV10
+import OrderBookVaultV11 from 0xOrderBookVaultV11
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
@@ -6,8 +6,8 @@ import FUSD from 0xFUSD
 pub fun main(userAddress: Address): Bool {
     let signer = getAccount(userAddress)
 
-    let vaultRef = signer.getCapability(OrderBookVaultV10.TokenPublicPath)!
-        .borrow<&OrderBookVaultV10.TokenBundle{OrderBookVaultV10.TokenBundlePublic}>()
+    let vaultRef = signer.getCapability(OrderBookVaultV11.TokenPublicPath)!
+        .borrow<&OrderBookVaultV11.Administrator>(from: OrderBookVaultV11.TokenStoragePath)
         ?? nil
 
     let receiverRef = signer.getCapability(/public/fusdReceiver)!
@@ -20,4 +20,3 @@ pub fun main(userAddress: Address): Bool {
 
     return (receiverRef != nil) && (balanceRef != nil) && (vaultRef != nil)
 }
-`

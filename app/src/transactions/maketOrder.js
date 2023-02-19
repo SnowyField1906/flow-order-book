@@ -11,7 +11,7 @@ export default async function limitOrder(quantity, isBid) {
 
 const LIMIT_ORDER = (quantity, isBid) => `
 import OrderBookV11 from 0xOrderBookV11
-import OrderBookVaultV10 from 0xOrderBookVaultV10
+import OrderBookVaultV11 from 0xOrderBookVaultV11
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
@@ -22,9 +22,9 @@ transaction() {
     var contractVault: @OrderBookVault.TokenBundle
 
     prepare(signer: AuthAccount) {
-        if signer.borrow<&OrderBookVaultV10.TokenBundle>(from: OrderBookVaultV10.TokenStoragePath) == nil {
-            signer.save(<- OrderBookVaultV10.createTokenBundle(admins: [signer.address]), to: OrderBookVaultV10.TokenStoragePath)
-            signer.link<&OrderBookVaultV10.TokenBundle{OrderBookVaultV10.TokenBundlePublic}>(OrderBookVaultV10.TokenBundlePublicPath, target: OrderBookVaultV10.TokenStoragePath)
+        if signer.borrow<&OrderBookVaultV11.TokenBundle>(from: OrderBookVaultV11.TokenStoragePath) == nil {
+            signer.save(<- OrderBookVaultV11.createTokenBundle(admins: [signer.address]), to: OrderBookVaultV11.TokenStoragePath)
+            signer.link<&OrderBookVaultV11.TokenBundle{OrderBookVaultV11.TokenBundlePublic}>(OrderBookVaultV11.TokenBundlePublicPath, target: OrderBookVaultV11.TokenStoragePath)
        }
         if isBid {
             let vaultRef = signer.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)

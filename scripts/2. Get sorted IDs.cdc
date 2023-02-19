@@ -17,9 +17,9 @@ pub fun inorderBid(key: UFix64?) {
         return;
     }
 
-    inorderBid(key: OrderBookV11.askTree.nodes[key!]?.right)
+    inorderBid(key: OrderBookV11.bidTree.nodes[key!]?.right)
     keys.append(key!)
-    inorderBid(key: OrderBookV11.askTree.nodes[key!]?.left)
+    inorderBid(key: OrderBookV11.bidTree.nodes[key!]?.left)
 }
     
 pub fun main(isBid: Bool): [UFix64] {

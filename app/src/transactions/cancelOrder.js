@@ -15,7 +15,7 @@ export default async function cancelOrder(price, isBid) {
 
 const CANCEL_ORDER = `
 import OrderBookV11 from 0xOrderBookV11
-import OrderBookVaultV10 from 0xOrderBookVaultV10
+import OrderBookVaultV11 from 0xOrderBookVaultV11
 import FungibleToken from 0xFungibleToken
 
 transaction(price: UFix64, isBid: Bool) {
@@ -24,24 +24,20 @@ transaction(price: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
         self.maker = signer.address
 
-        if signer.borrow<&OrderBookVaultV10.TokenBundle>(from: OrderBookVaultV10.TokenStoragePath) == nil {
-            signer.save(<- OrderBookVaultV10.createTokenBundle(admins: [signer.address]), to: OrderBookVaultV10.TokenStoragePath)
-            signer.link<&OrderBookVaultV10.TokenBundle{OrderBookVaultV10.TokenBundlePublic}>(OrderBookVaultV10.TokenPublicPath, target: OrderBookVaultV10.TokenStoragePath)
-        }
-
         let receiveAmount = OrderBookV11.cancelOrder(price: price, isBid: isBid)
 
-        let contractVault = signer.borrow<&OrderBookVaultV10.TokenBundle>(from: OrderBookVaultV10.TokenStoragePath)!
+        let contractVault = signer.borrow<&OrderBookVaultV11.Administrator>(from: OrderBookVaultV11.TokenStoragePath)!
+
         if isBid {
             let userFlowVault = getAccount(self.maker).getCapability(/public/flowTokenReceiver)
                 .borrow<&{FungibleToken.Receiver}>()!
-            let contractFlowVault <- contractVault.withdrawFlow(amount: receiveAmount, admin: self.maker)
+            let contractFlowVault <- contractVault.withdrawFlow(amount: receiveAmount)
             userFlowVault.deposit(from: <-contractFlowVault)
         }
         else {
             let userFusdVault = getAccount(self.maker).getCapability(/public/fusdReceiver)
                 .borrow<&{FungibleToken.Receiver}>()!
-            let contractFusdVault <- contractVault.withdrawFusd(amount: receiveAmount, admin: self.maker)
+            let contractFusdVault <- contractVault.withdrawFusd(amount: receiveAmount)
             userFusdVault.deposit(from: <-contractFusdVault)
         }
     }

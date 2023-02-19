@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import getOfferDetail from "../scripts/getOfferDetail";
+import getOrderDetail from "../scripts/getOrderDetail";
 import cancelOrder from "../transactions/cancelOrder";
 import * as fcl from "@onflow/fcl";
 
 function Order({ id, isBid, address }) {
     const [detail, setDetail] = useState({});
     useEffect(() => {
-        getOfferDetail(id, isBid).then((res) => {
+        getOrderDetail(id, isBid).then((res) => {
             setDetail(res);
         });
     }, []);

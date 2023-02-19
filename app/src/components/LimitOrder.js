@@ -6,6 +6,8 @@ function LimitOrder() {
     const [amount, setAmount] = useState("");
     const [isBid, setIsBid] = useState(true);
 
+    console.log(typeof price, typeof amount)
+
     return (
         <div className='gris place-content-center w-full h-full'>
             <div className="text-center my-5 font-semibold text-xl w-[90%] mx-auto">
@@ -45,7 +47,7 @@ function LimitOrder() {
                         <div onClick={() => limitOrder(price, amount, true)}
                             className="bg-blue-800 hover:bg-blue-900 cursor-pointer mx-auto rounded-xl text-white font-medium
                  py-2 w-[90%] text-center mt-4">
-                            Pay {price * amount} Flow
+                            Pay {+price * +amount} Flow
                         </div>
                         :
                         <div onClick={() => limitOrder(price, amount, false)}
