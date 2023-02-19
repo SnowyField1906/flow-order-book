@@ -7,9 +7,9 @@ export default async function getCurrent() {
 }
 
 const OFFER_DETAILS = `
-import OrderBookV10 from 0xOrderBookV10
+import OrderBookV11 from 0xOrderBookV11
 
-pub fun main(id: UFix64): OrderBookV10.Offer? {
-    return OrderBookV10.offers[id]
+pub fun main(id: UFix64): OrderBookV11.Offer? {
+    return OrderBookV11.offers[id]
 }
 `

@@ -7,12 +7,12 @@ export default async function getOfferDetail(id, isBid) {
 }
 
 const OFFER_DETAILS = (id, isBid) => `
-import OrderBookV10 from 0xOrderBookV10
+import OrderBookV11 from 0xOrderBookV11
 
-pub fun main(): OrderBookV10.Offer? {
+pub fun main(): OrderBookV11.Offer? {
     if ${isBid} {
-        return OrderBookV10.bidOffers[UFix64(${id})]
+        return OrderBookV11.bidOffers[UFix64(${id})]
     }
-    return OrderBookV10.askOffers[UFix64(${id})]
+    return OrderBookV11.askOffers[UFix64(${id})]
 }
 `

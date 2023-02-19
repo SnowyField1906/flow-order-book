@@ -1,4 +1,4 @@
-import OrderBookV10 from 0xOrderBookV10
+import OrderBookV11 from 0xOrderBookV11
 
 access(all) var keys: [UFix64] = []
     
@@ -7,9 +7,9 @@ pub fun inorderAsk(key: UFix64?) {
         return;
     }
 
-    inorderAsk(key: OrderBookV10.askTree.nodes[key!]?.right)
+    inorderAsk(key: OrderBookV11.askTree.nodes[key!]?.right)
     keys.append(key!)
-    inorderAsk(key: OrderBookV10.askTree.nodes[key!]?.left)
+    inorderAsk(key: OrderBookV11.askTree.nodes[key!]?.left)
 }
 
 pub fun inorderBid(key: UFix64?) {
@@ -17,16 +17,16 @@ pub fun inorderBid(key: UFix64?) {
         return;
     }
 
-    inorderBid(key: OrderBookV10.askTree.nodes[key!]?.right)
+    inorderBid(key: OrderBookV11.askTree.nodes[key!]?.right)
     keys.append(key!)
-    inorderBid(key: OrderBookV10.askTree.nodes[key!]?.left)
+    inorderBid(key: OrderBookV11.askTree.nodes[key!]?.left)
 }
     
 pub fun main(isBid: Bool): [UFix64] {
     if isBid {
-        inorderBid(key: OrderBookV10.bidTree.root)
+        inorderBid(key: OrderBookV11.bidTree.root)
     } else {
-        inorderAsk(key: OrderBookV10.askTree.root)
+        inorderAsk(key: OrderBookV11.askTree.root)
     }
 
     return keys

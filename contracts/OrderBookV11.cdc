@@ -1,4 +1,4 @@
-pub contract OrderBookV10 {
+pub contract OrderBookV11 {
     pub var current: UFix64
     pub let bidTree : RedBlackTree
     pub let askTree : RedBlackTree
@@ -138,7 +138,7 @@ pub contract OrderBookV10 {
         init() {
             self.EMPTY = 0.0
             self.root = self.EMPTY
-            self.nodes = {0.0 : OrderBookV10.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
+            self.nodes = {0.0 : OrderBookV11.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
         }
 
 

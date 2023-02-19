@@ -38,8 +38,8 @@ describe("Offers & IDs", () => {
         await deployContract({ name: "interfaces/FungibleToken" })
         await deployContract({ name: "tokens/FUSD" })
         // await deployContract({ name: "tokens/FlowToken" })
-        await deployContract({ name: "OrderBookVaultV9" })
-        await deployContract({ name: "OrderBookV10" })
+        await deployContract({ name: "OrderBookVaultV10" })
+        await deployContract({ name: "OrderBookV11" })
 
         await shallPass(
             sendTransaction({

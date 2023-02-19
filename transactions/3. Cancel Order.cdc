@@ -1,5 +1,5 @@
-import OrderBookV10 from 0xOrderBookV10
-import OrderBookVaultV9 from 0xOrderBookVaultV9
+import OrderBookV11 from 0xOrderBookV11
+import OrderBookVaultV10 from 0xOrderBookVaultV10
 import FungitibleToken from 0xFungibleToken
 
 transaction(price: UFix64, isBid: Bool) {
@@ -8,9 +8,9 @@ transaction(price: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
         self.maker = signer.address
 
-        let receiveAmount = OrderBookV10.cancelOrder(price: price, isBid: isBid)
+        let receiveAmount = OrderBookV11.cancelOrder(price: price, isBid: isBid)
 
-        let contractVault = signer.borrow<&OrderBookVaultV9.TokenBundle>(from: OrderBookVaultV9.TokenStoragePath)!
+        let contractVault = signer.borrow<&OrderBookVaultV10.TokenBundle>(from: OrderBookVaultV10.TokenStoragePath)!
         if isBid {
             let userFlowVault = getAccount(self.maker).getCapability(/public/flowTokenReceiver)
                 .borrow<&{FungibleToken.Receiver}>()!

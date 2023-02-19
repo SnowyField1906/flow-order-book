@@ -14,8 +14,8 @@ export default async function cancelOrder(price, isBid) {
 }
 
 const CANCEL_ORDER = `
-import OrderBookV10 from 0xOrderBookV10
-import OrderBookVaultV9 from 0xOrderBookVaultV9
+import OrderBookV11 from 0xOrderBookV11
+import OrderBookVaultV10 from 0xOrderBookVaultV10
 import FungibleToken from 0xFungibleToken
 
 transaction(price: UFix64, isBid: Bool) {
@@ -24,14 +24,14 @@ transaction(price: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
         self.maker = signer.address
 
-        if signer.borrow<&OrderBookVaultV9.TokenBundle>(from: OrderBookVaultV9.TokenStoragePath) == nil {
-            signer.save(<- OrderBookVaultV9.createTokenBundle(admins: [signer.address]), to: OrderBookVaultV9.TokenStoragePath)
-            signer.link<&OrderBookVaultV9.TokenBundle{OrderBookVaultV9.TokenBundlePublic}>(OrderBookVaultV9.TokenPublicPath, target: OrderBookVaultV9.TokenStoragePath)
+        if signer.borrow<&OrderBookVaultV10.TokenBundle>(from: OrderBookVaultV10.TokenStoragePath) == nil {
+            signer.save(<- OrderBookVaultV10.createTokenBundle(admins: [signer.address]), to: OrderBookVaultV10.TokenStoragePath)
+            signer.link<&OrderBookVaultV10.TokenBundle{OrderBookVaultV10.TokenBundlePublic}>(OrderBookVaultV10.TokenPublicPath, target: OrderBookVaultV10.TokenStoragePath)
         }
 
-        let receiveAmount = OrderBookV10.cancelOrder(price: price, isBid: isBid)
+        let receiveAmount = OrderBookV11.cancelOrder(price: price, isBid: isBid)
 
-        let contractVault = signer.borrow<&OrderBookVaultV9.TokenBundle>(from: OrderBookVaultV9.TokenStoragePath)!
+        let contractVault = signer.borrow<&OrderBookVaultV10.TokenBundle>(from: OrderBookVaultV10.TokenStoragePath)!
         if isBid {
             let userFlowVault = getAccount(self.maker).getCapability(/public/flowTokenReceiver)
                 .borrow<&{FungibleToken.Receiver}>()!

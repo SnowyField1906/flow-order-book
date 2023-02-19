@@ -2,7 +2,7 @@ import FungibleToken from 0x9a0766d93b6608b7
 import FUSD from 0xe223d8a629e49c68
 import FlowToken from 0x7e60df042a9c0868
 
-pub contract OrderBookVaultV9 {
+pub contract OrderBookVaultV10 {
   pub let TokenStoragePath  : StoragePath
   pub let TokenPublicPath  : PublicPath
 
@@ -69,8 +69,8 @@ pub contract OrderBookVaultV9 {
 
   init() {
 
-    self.TokenPublicPath = /public/OrderBookVaultTokenV9
-    self.TokenStoragePath = /storage/OrderBookVaultTokenV9
+    self.TokenPublicPath = /public/OrderBookVaultTokenV10
+    self.TokenStoragePath = /storage/OrderBookVaultTokenV10
 
     self.account.save(<-create TokenBundle(admins: []), to: self.TokenStoragePath)
     self.account.link<&TokenBundle{TokenBundlePublic}>(self.TokenPublicPath, target: self.TokenStoragePath)
