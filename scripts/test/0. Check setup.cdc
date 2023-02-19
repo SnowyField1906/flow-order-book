@@ -1,15 +1,3 @@
-import * as fcl from "@onflow/fcl";
-
-export default async function checkSetup(address) {
-    return fcl.query({
-        cadence: CHECK_SETUP,
-        args: (arg, t) => [
-            arg(address, t.Address),
-        ],
-    });
-}
-
-const CHECK_SETUP = `
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
@@ -27,4 +15,3 @@ pub fun main(userAddress: Address): Bool {
 
     return (receiverRef != nil) && (balanceRef != nil)
 }
-`

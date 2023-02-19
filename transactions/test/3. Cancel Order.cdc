@@ -1,19 +1,3 @@
-import * as fcl from "@onflow/fcl";
-
-export default async function cancelOrder(price, isBid) {
-    return fcl.mutate({
-        cadence: CANCEL_ORDER,
-        proposer: fcl.currentUser,
-        payer: fcl.currentUser,
-        authorizations: [fcl.currentUser],
-        args: (arg, t) => [
-            arg(price.toString(), t.UFix64),
-            arg(isBid, t.Bool),
-        ],
-    });
-}
-
-const CANCEL_ORDER = `
 import OrderBookV13 from 0xOrderBookV13
 import FlowFusdVaultV2 from 0xFlowFusdVaultV2
 import FungibleToken from 0xFungibleToken
@@ -43,4 +27,3 @@ transaction(price: UFix64, isBid: Bool) {
     execute {
     }
 }
-`

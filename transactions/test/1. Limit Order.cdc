@@ -1,21 +1,3 @@
-import * as fcl from "@onflow/fcl";
-
-export default async function limitOrder(price, amount, isBid) {
-  return fcl.mutate({
-    cadence: LIMIT_ORDER,
-    proposer: fcl.currentUser,
-    payer: fcl.currentUser,
-    authorizations: [fcl.currentUser],
-    args: (arg, t) => [
-      arg(price.toString(), t.UFix64),
-      arg(amount.toString(), t.UFix64),
-      arg(isBid, t.Bool),
-    ],
-    limit: 1000,
-  });
-}
-
-const LIMIT_ORDER = `
 import OrderBookV13 from 0xOrderBookV13
 import FlowFusdVaultV2 from 0xFlowFusdVaultV2
 import FungibleToken from 0xFungibleToken
@@ -61,7 +43,7 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
               receiverFlowVault.deposit(from: <- userFlowVault)
 
               // transfer FUSD from contract's to this order
-              let contractFusdVault <- FlowFusdVaultV2.withdrawFusd(amount: amount, owner: OrderBookV13.askOffers[price]!.maker) as! @FUSD.Vault
+              let contractFusdVault <- FlowFusdVaultV2.withdrawFusd(amount: amount, owner: OrderBookV13.askOffers[price]!.maker)
               let userFusdVault = getAccount(self.maker).getCapability(/public/fusdReceiver)
                 .borrow<&{FungibleToken.Receiver}>()!
               userFusdVault.deposit(from: <- contractFusdVault)
@@ -75,6 +57,10 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
                 // add this order with decreased amount
                 OrderBookV13.limitOrder(self.maker, price: price, amount: amount - OrderBookV13.askOffers[price]!.amount, isBid: isBid)
 
+                // transfer Flow from this order's to contract
+                let userFlowVault <- flowVaultRef.withdraw(amount: price*OrderBookV13.askOffers[price]!.amount) as! @FlowToken.Vault
+                FlowFusdVaultV2.depositFlow(from: <- userFlowVault, owner: self.maker)
+
                 // transfer Flow from this order's to ask
                 let userFlowVault <- flowVaultRef.withdraw(amount: price*OrderBookV13.askOffers[price]!.amount) as! @FlowToken.Vault
                 let receiverFlowVault = getAccount(OrderBookV13.askOffers[price]!.maker).getCapability(/public/flowTokenReceiver)
@@ -82,7 +68,7 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
                 receiverFlowVault.deposit(from: <- userFlowVault)
 
                 // transfer FUSD from contract's to this order
-                let contractFusdVault <- FlowFusdVaultV2.withdrawFusd(amount: OrderBookV13.askOffers[price]!.amount, owner: OrderBookV13.askOffers[price]!.maker) as! @FUSD.Vault
+                let contractFusdVault <- FlowFusdVaultV2.withdrawFusd(amount: OrderBookV13.askOffers[price]!.amount, owner: OrderBookV13.askOffers[price]!.maker)
                 let userFusdVault = getAccount(self.maker).getCapability(/public/fusdReceiver)
                   .borrow<&{FungibleToken.Receiver}>()!
                 userFusdVault.deposit(from: <- contractFusdVault)
@@ -128,7 +114,7 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
               receiverFusdVault.deposit(from: <- userFusdVault)
 
               // transfer Flow from contract's to this order
-              let contractFlowVault <- FlowFusdVaultV2.withdrawFlow(amount: amount*price, owner: OrderBookV13.bidOffers[price]!.maker) as! @FlowToken.Vault
+              let contractFlowVault <- FlowFusdVaultV2.withdrawFlow(amount: amount*price, owner: OrderBookV13.bidOffers[price]!.maker)
               let userFlowVault = getAccount(self.maker).getCapability(/public/flowTokenReceiver)
                 .borrow<&{FungibleToken.Receiver}>()!
               userFlowVault.deposit(from: <- contractFlowVault)
@@ -142,6 +128,10 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
                 // add this order with decreased amount
                 OrderBookV13.limitOrder(self.maker, price: price, amount: amount - OrderBookV13.bidOffers[price]!.amount, isBid: isBid)
 
+                // transfer FUSD from this order's to contract
+                let userFusdVault <- fusdVaultRef.withdraw(amount: OrderBookV13.bidOffers[price]!.amount) as! @FUSD.Vault
+                FlowFusdVaultV2.depositFusd(from: <- userFusdVault, owner: self.maker)
+
                 // transfer FUSD from this order's to bid
                 let userFusdVault <- fusdVaultRef.withdraw(amount: OrderBookV13.bidOffers[price]!.amount) as! @FUSD.Vault
                 let receiverFusdVault = getAccount(OrderBookV13.bidOffers[price]!.maker).getCapability(/public/fusdReceiver)
@@ -149,7 +139,7 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
                 receiverFusdVault.deposit(from: <- userFusdVault)
 
                 // transfer Flow from contract's to this order
-                let contractFlowVault <- FlowFusdVaultV2.withdrawFlow(amount: price*OrderBookV13.bidOffers[price]!.amount, owner: OrderBookV13.bidOffers[price]!.maker) as! @FlowToken.Vault
+                let contractFlowVault <- FlowFusdVaultV2.withdrawFlow(amount: price*OrderBookV13.bidOffers[price]!.amount, owner: OrderBookV13.bidOffers[price]!.maker)
                 let userFlowVault = getAccount(self.maker).getCapability(/public/flowTokenReceiver)
                   .borrow<&{FungibleToken.Receiver}>()!
                 userFlowVault.deposit(from: <- contractFlowVault)
@@ -167,4 +157,3 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
     execute {
     }
 }
-`

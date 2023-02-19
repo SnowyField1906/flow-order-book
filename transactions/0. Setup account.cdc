@@ -1,13 +1,13 @@
-import OrderBookVaultV11 from 0xOrderBookVaultV11
+import OrderBookVaultV12 from 0xOrderBookVaultV12
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
 
 transaction {
     prepare(signer: AuthAccount) {
-        if signer.borrow<&OrderBookVaultV11.Administrator>(from: OrderBookVaultV11.TokenStoragePath) == nil {
-            signer.save(<-OrderBookVaultV11.createAdministrator(), to: OrderBookVaultV11.TokenStoragePath)
-            signer.link<&OrderBookVaultV11.Administrator>(OrderBookVaultV11.TokenPublicPath, target: OrderBookVaultV11.TokenStoragePath)
+        if signer.borrow<&OrderBookVaultV12.Administrator>(from: OrderBookVaultV12.TokenStoragePath) == nil {
+            signer.save(<-OrderBookVaultV12.createAdministrator(), to: OrderBookVaultV12.TokenStoragePath)
+            signer.link<&OrderBookVaultV12.Administrator>(OrderBookVaultV12.TokenPublicPath, target: OrderBookVaultV12.TokenStoragePath)
         }
 
         if signer.borrow<&FUSD.Vault>(from: /storage/fusdVault) == nil {
