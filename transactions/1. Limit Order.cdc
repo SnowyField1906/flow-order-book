@@ -151,3 +151,4 @@ transaction(price: UFix64, amount: UFix64, isBid: Bool) {
     execute {
     }
 }
+ 
