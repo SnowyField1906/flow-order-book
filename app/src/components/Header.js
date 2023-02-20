@@ -27,7 +27,7 @@ export default function Header({ setAddress }) {
 
 
     return (
-        <div className="bg-blue-800 grid grid-cols-3 w-full h-16">
+        <div className="bg-blue-800 grid grid-cols-3 w-full h-16 fixed z-50">
             <div className="grid grid-cols-2 h-full border-r-2 place-content-center">
                 <div className="text-4xl font-bold text-white self-center text-center">Flow-FUSD</div>
                 <div className="grid">

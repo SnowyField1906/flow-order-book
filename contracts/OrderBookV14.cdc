@@ -1,12 +1,10 @@
-pub contract OrderBookV13 {
-    pub var current: UFix64
+pub contract OrderBookV14 {
     pub let bidTree : RedBlackTree
     pub let askTree : RedBlackTree
     pub(set) var bidOffers : {UFix64: Offer}
     pub(set) var askOffers : {UFix64: Offer}
 
     init() {
-        self.current = 0.0
         self.bidTree = RedBlackTree()
         self.askTree = RedBlackTree()
         self.bidOffers = {}
@@ -15,10 +13,7 @@ pub contract OrderBookV13 {
 
     pub fun limitOrder(_ maker: Address, price: UFix64, amount: UFix64, isBid: Bool) {
         let price: UFix64 = price
-        
-        if self.current == 0.0 {
-            self.current = price
-        }
+
         if isBid {
             self.bidOffers[price] = Offer(maker, amount: amount)
             self.bidTree.insert(key: price)
@@ -29,43 +24,55 @@ pub contract OrderBookV13 {
         }
     }
 
-    pub fun marketOrder(quantity: UFix64, isBid: Bool): UFix64 {
+    pub fun marketOrder(quantity: UFix64, isBid: Bool): {Address: Balance} {
+        var owed: {Address: Balance} = {}
         var _quantity: UFix64 = quantity
-        var payAmount: UFix64 = 0.0
-        var price: UFix64 = self.current
 
         if isBid {
+            var price: UFix64 = self.askTree.treeMinimum(key: self.askTree.root)
             while _quantity > 0.0 && price != 0.0 {
-                if self.askOffers[price]!.amount <= _quantity {
-                    payAmount = payAmount + self.askOffers[price]!.amount * price
+                if self.askOffers[price]?.amount != nil && self.askOffers[price]!.amount <= _quantity {
+                    owed[self.askOffers[price]!.maker] = Balance(
+                        flow: self.askOffers[price]!.amount * price,
+                        fusd: self.askOffers[price]!.amount
+                    )
                     _quantity = _quantity - self.askOffers[price]!.amount
                     price = self.askTree.next(target: price)
                     self.askTree.remove(key: price)
                     self.askOffers.remove(key: price)
                 } else {
                     self.askOffers[price]!.changeAmount(amount: self.askOffers[price]!.amount - _quantity)
-                    payAmount = payAmount + _quantity / price
+                    owed[self.askOffers[price]!.maker] = Balance(
+                        flow: _quantity * price,
+                        fusd: _quantity
+                    )
                     break
                 }
             }
         }
         else {
+            var price: UFix64 = self.bidTree.treeMaximum(key: self.bidTree.root)
             while _quantity > 0.0 && price != 0.0 {
-                if self.bidOffers[price]!.amount <= _quantity {
-                    payAmount = payAmount + self.bidOffers[price]!.amount * price
+                if self.bidOffers[price]?.amount != nil && self.bidOffers[price]!.amount <= _quantity {
+                    owed[self.bidOffers[price]!.maker] = Balance(
+                        flow: self.bidOffers[price]!.amount * price,
+                        fusd: self.bidOffers[price]!.amount
+                    )
                     _quantity = _quantity - self.bidOffers[price]!.amount
-                    price = self.askTree.next(target: price)
-                    self.askTree.remove(key: price)
+                    price = self.bidTree.prev(target: price)
+                    self.bidTree.remove(key: price)
                     self.bidOffers.remove(key: price)
                 } else {
                     self.bidOffers[price]!.changeAmount(amount: self.bidOffers[price]!.amount - _quantity)
-                    payAmount = payAmount + _quantity / price
+                    owed[self.bidOffers[price]!.maker] = Balance(
+                        flow: _quantity * price,
+                        fusd: _quantity
+                    )
                     break
                 }
             }
         }
-        self.current = price
-        return payAmount
+        return owed
     }
 
     pub fun cancelOrder(price: UFix64, isBid: Bool): UFix64 {
@@ -73,13 +80,23 @@ pub contract OrderBookV13 {
             let receiveAmount = price * self.bidOffers[price]!.amount
             self.bidTree.remove(key: price)
             self.bidOffers.remove(key: price)
-            return receiveAmount * price
+            return receiveAmount
         }
         else {
-            let receiveAmount = price * self.askOffers[price]!.amount
+            let receiveAmount = self.askOffers[price]!.amount
             self.askTree.remove(key: price)
             self.askOffers.remove(key: price)
             return receiveAmount
+        }
+    }
+
+    pub struct Balance {
+        pub var flow: UFix64
+        pub var fusd: UFix64
+
+        init(flow: UFix64, fusd: UFix64) {
+            self.flow = flow
+            self.fusd = fusd
         }
     }
 
@@ -138,7 +155,7 @@ pub contract OrderBookV13 {
         init() {
             self.EMPTY = 0.0
             self.root = self.EMPTY
-            self.nodes = {0.0 : OrderBookV13.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
+            self.nodes = {0.0 : OrderBookV14.Node(parent: 0.0, left: 0.0, right: 0.0, red: false)}
         }
 
 

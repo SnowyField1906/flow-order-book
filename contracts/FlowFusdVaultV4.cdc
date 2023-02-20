@@ -2,7 +2,7 @@ import FungibleToken from 0x9a0766d93b6608b7
 import FUSD from 0xe223d8a629e49c68
 import FlowToken from 0x7e60df042a9c0868
 
-pub contract FlowFusdVaultV2 {
+pub contract FlowFusdVaultV4 {
     access(contract) let flowVault: @FlowToken.Vault
     access(contract) let fusdVault: @FUSD.Vault
 
@@ -23,7 +23,7 @@ pub contract FlowFusdVaultV2 {
             flowBalance: (self.vaults[owner]?.flowBalance ?? 0.0) + from.balance,
             fusdBalance: (self.vaults[owner]?.fusdBalance ?? 0.0)
         )
-        FlowFusdVaultV2.flowVault.deposit(from: <- (from as! @FungibleToken.Vault))
+        FlowFusdVaultV4.flowVault.deposit(from: <- (from as! @FungibleToken.Vault))
     }
 
     pub fun depositFusd(from: @FUSD.Vault, owner: Address) {
@@ -31,23 +31,23 @@ pub contract FlowFusdVaultV2 {
             flowBalance: (self.vaults[owner]?.flowBalance ?? 0.0),
             fusdBalance: (self.vaults[owner]?.fusdBalance ?? 0.0) + from.balance
         )
-        FlowFusdVaultV2.fusdVault.deposit(from: <- (from as! @FungibleToken.Vault))
+        FlowFusdVaultV4.fusdVault.deposit(from: <- (from as! @FungibleToken.Vault))
     }
 
     pub fun withdrawFlow(amount: UFix64, owner: Address): @FungibleToken.Vault {
         self.vaults[owner] = Balance(
-            flowBalance: self.vaults[owner]?.flowBalance ?? 0.0 - amount,
-            fusdBalance: self.vaults[owner]?.fusdBalance ?? 0.0
+            flowBalance: (self.vaults[owner]?.flowBalance ?? 0.0) - amount,
+            fusdBalance: (self.vaults[owner]?.fusdBalance ?? 0.0)
         )
-        return <- FlowFusdVaultV2.flowVault.withdraw(amount: amount)
+        return <- FlowFusdVaultV4.flowVault.withdraw(amount: amount)
     }
 
     pub fun withdrawFusd(amount: UFix64, owner: Address): @FungibleToken.Vault {
         self.vaults[owner] = Balance(
-            flowBalance: self.vaults[owner]?.flowBalance ?? 0.0,
-            fusdBalance: self.vaults[owner]?.fusdBalance ?? 0.0 - amount
+            flowBalance: (self.vaults[owner]?.flowBalance ?? 0.0),
+            fusdBalance: (self.vaults[owner]?.fusdBalance ?? 0.0) - amount
         )
-        return <- FlowFusdVaultV2.fusdVault.withdraw(amount: amount)
+        return <- FlowFusdVaultV4.fusdVault.withdraw(amount: amount)
     }
 
     pub fun getFlowBalance(): UFix64 {
@@ -65,3 +65,4 @@ pub contract FlowFusdVaultV2 {
         self.vaults = {}
     }
 }
+ 

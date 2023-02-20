@@ -1,54 +1,68 @@
 import * as fcl from "@onflow/fcl";
 
-export default async function limitOrder(quantity, isBid) {
-    return fcl.mutate({
-        cadence: LIMIT_ORDER(quantity, isBid),
-        proposer: fcl.currentUser,
-        payer: fcl.currentUser,
-        authorizations: [fcl.currentUser],
-    });
+export default async function marketOrder(quantity, isBid) {
+  return fcl.mutate({
+    cadence: MARKET_ORDER,
+    proposer: fcl.currentUser,
+    payer: fcl.currentUser,
+    authorizations: [fcl.currentUser],
+    args: (arg, t) => [
+      arg(quantity.toString(), t.UFix64),
+      arg(isBid, t.Bool),
+    ],
+    limit: 1000,
+  });
 }
 
-const LIMIT_ORDER = (quantity, isBid) => `
-import OrderBookV13 from 0xOrderBookV13
-import OrderBookVaultV12 from 0xOrderBookVaultV12
+const MARKET_ORDER = `
+import OrderBookV14 from 0xOrderBookV14
+import FlowFusdVaultV4 from 0xFlowFusdVaultV4
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
 
-transaction() {
-    var userFusdVault: @FungibleToken.Vault
-    var userFlowVault: @FungibleToken.Vault
-    var contractVault: @OrderBookVault.TokenBundle
+transaction(quantity: UFix64, isBid: Bool) {
 
     prepare(signer: AuthAccount) {
-        if signer.borrow<&OrderBookVaultV12.TokenBundle>(from: OrderBookVaultV12.TokenStoragePath) == nil {
-            signer.save(<- OrderBookVaultV12.createTokenBundle(admins: [signer.address]), to: OrderBookVaultV12.TokenStoragePath)
-            signer.link<&OrderBookVaultV12.TokenBundle{OrderBookVaultV12.TokenBundlePublic}>(OrderBookVaultV12.TokenBundlePublicPath, target: OrderBookVaultV12.TokenStoragePath)
-       }
+        let owed: {Address: OrderBookV14.Balance} = OrderBookV14.marketOrder(quantity: quantity, isBid: isBid)
+
         if isBid {
-            let vaultRef = signer.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
-            self.userVault <- vaultRef.withdraw(amount: UFix64(${(quantity)}))
+            let flowVaultRef = signer.borrow<&FUSD.Vault>(from: /storage/fusdVault)!
+
+            owed.forEachKey(fun (key: Address): Bool {
+                // transfer Flow from this order's to the makers
+                let receiverFlowVault = getAccount(key).getCapability(/public/flowTokenReceiver)
+                    .borrow<&{FungibleToken.Receiver}>()!
+                receiverFlowVault.deposit(from: <- flowVaultRef.withdraw(amount: owed[key]!.flow))
+
+                // transfer FUSD from contract's to this order 
+                let userFusdVault = getAccount(signer.address).getCapability(/public/fusdReceiver)
+                    .borrow<&{FungibleToken.Receiver}>()!
+                userFusdVault.deposit(from: <- FlowFusdVaultV4.withdrawFusd(amount: owed[key]!.fusd, owner: key))
+
+                return true
+            })
         }
         else {
-            let vaultRef = signer.borrow<&FUSD.Vault>(from: /storage/fusdVault)
-            self.userVault <- vaultRef.withdraw(amount: UFix64(${(quantity)}))
-        }
-        self.contractVault = signer.borrow<&OrderBookVault.TokenBundle>(from: OrderBookVault.TokenStoragePath)
+            let fusdVaultRef = signer.borrow<&FUSD.Vault>(from: /storage/fusdVault)!
 
+            owed.forEachKey(fun (key: Address): Bool {
+                // transfer FUSD from this order's to the makers
+                let receiverFusdVault = getAccount(key).getCapability(/public/fusdReceiver)
+                    .borrow<&{FungibleToken.Receiver}>()!
+                receiverFusdVault.deposit(from: <- fusdVaultRef.withdraw(amount: owed[key]!.fusd))
+
+                // transfer Flow from contract's to this order
+                let userFlowVault = getAccount(signer.address).getCapability(/public/flowTokenReceiver)
+                    .borrow<&{FungibleToken.Receiver}>()!
+                userFlowVault.deposit(from: <- FlowFusdVaultV4.withdrawFlow(amount: owed[key]!.flow, owner: key))
+
+                return true
+            })
+        }
     }
 
     execute {
-        let payAmount = OrderBookV13.marketOrder(quantity: UFix64(${(quantity)}), isBid: ${(isBid)})
-
-        if ${isBid} {
-            let tokenVault <- self.userFlowVault.withdraw(amount: UFix64(${(quantity)}) as! @FlowToken.Vault
-            self.contractVault.depositFlow(from: <-tokenVault)
-        }
-        else {
-            let tokenVault <- self.userFusdVault.withdraw(amount: UFix64(${(quantity)}) as! @FUSD.Vault
-            self.contractVault.depositFusd(from: <-tokenVault)
-        }
     }
 }
 `
