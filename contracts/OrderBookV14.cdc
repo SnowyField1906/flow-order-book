@@ -4,11 +4,6 @@ import FlowToken from 0x04
 import FungibleToken from 0x05
 
 pub contract OrderBookV14 {
-    pub event TokensInitialized(initialSupply: UFix64)
-    pub event TokensWithdrawn(amount: UFix64, from: Address?)
-    pub event TokensDeposited(amount: UFix64, to: Address?)
-    pub event TokensMinted(amount: UFix64)
-
     pub let AdminPrivatePath: StoragePath
     pub let AdminPublicPath: PublicPath
 
@@ -121,7 +116,7 @@ pub contract OrderBookV14 {
                 self.bidTree.insert(key: price)
 
                 // (2): transfer Flow from this order's to contract
-                storageCapability.borrow()!.depositFlow(from: <- flowVaultRef.withdraw(amount: price*amount))
+                storageCapability.borrow()!.depositFlow(from: <- flowVaultRef.withdraw(amount: price * amount))
             }
 
             /* exists a matching ask order */
@@ -138,7 +133,7 @@ pub contract OrderBookV14 {
 
                     // (3): transfer Flow from this order's to ask
                     
-                    askReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: price*amount))
+                    askReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: price * amount))
 
                     // (4): transfer FUSD from contract's to this order
                     thisReceiver.deposit(from: <- askOffer!.admin.storageCapability.borrow()!.withdrawFUSD(amount: amount))
@@ -154,10 +149,10 @@ pub contract OrderBookV14 {
                         self.bidTree.insert(key: price)
 
                         // (2): transfer Flow from this order's to contract
-                        storageCapability.borrow()!.depositFlow(from: <- flowVaultRef.withdraw(amount: price*(amount - askOffer!.amount)))
+                        storageCapability.borrow()!.depositFlow(from: <- flowVaultRef.withdraw(amount: price * (amount - askOffer!.amount)))
 
                         // (3): transfer Flow from this order's to ask
-                        askReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: price*askOffer!.amount))
+                        askReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: price * askOffer!.amount))
 
                         // (4): transfer FUSD from contract's to this order
                         thisReceiver.deposit(from: <- askOffer!.admin.storageCapability.borrow()!.withdrawFUSD(amount: askOffer!.amount))
@@ -167,7 +162,7 @@ pub contract OrderBookV14 {
                     else {
                         
                         // (3): transfer Flow from this order's to ask
-                        askReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: price*amount))
+                        askReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: price * amount))
 
                         // (4): transfer FUSD from contract's to this order
                         thisReceiver.deposit(from: <- askOffer!.admin.storageCapability.borrow()!.withdrawFUSD(amount: amount))
@@ -199,7 +194,7 @@ pub contract OrderBookV14 {
             else {
                 let bidOrder: &Order? = &self.bidOrders[price] as &Order?
                 let bidReceiver: &{AdminPublic} = getAccount(bidOrder!.admin.addr).getCapability(self.AdminPublicPath).borrow<&{AdminPublic}>()!
-                let thisReceiver: &{FungibleToken.Receiver} = getAccount(addr).getCapability(/public/fusdReceiver).borrow<&{FungibleToken.Receiver}>()!
+                let thisReceiver: &{FungibleToken.Receiver} = getAccount(addr).getCapability(/public/flowTokenReceiver).borrow<&{FungibleToken.Receiver}>()!
 
                 /* bid order has enough Flow amount for this order */
                 if bidOrder!.amount > amount {
@@ -211,7 +206,7 @@ pub contract OrderBookV14 {
                     bidReceiver.transferFusd(from: <- flowVaultRef.withdraw(amount: amount))
 
                     // (4): transfer Flow from contract's to this order
-                    thisReceiver.deposit(from: <- bidOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: amount*price))
+                    thisReceiver.deposit(from: <- bidOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: price * amount))
                 }
 
                 else {
@@ -230,7 +225,7 @@ pub contract OrderBookV14 {
                         bidReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: bidOrder!.amount))
 
                         // (4): transfer Flow from contract's to this order
-                        thisReceiver.deposit(from: <- bidOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: price*bidOrder!.amount))
+                        thisReceiver.deposit(from: <- bidOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: price * bidOrder!.amount))
                     }
 
                     /* bid order has equal FUSD amount for this order */
@@ -240,7 +235,7 @@ pub contract OrderBookV14 {
                         bidReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: amount))
 
                         // (4): transfer Flow from contract's to this order
-                        thisReceiver.deposit(from: <- bidOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: price*amount))
+                        thisReceiver.deposit(from: <- bidOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: price * amount))
                     }
                     
                     // (5): remove bid order
@@ -251,69 +246,86 @@ pub contract OrderBookV14 {
         }
     }
 
-    pub fun marketOrder(quantity: UFix64, isBid: Bool): {Address: Balance} {
-        var owed: {Address: Balance} = {}
+    pub fun marketOrder(addr: Address, quantity: UFix64, isBid: Bool, flowVaultRef: &FlowToken.Vault, fusdVaultRef: &FUSD.Vault) {
         var _quantity: UFix64 = quantity
 
         if isBid {
             var price: UFix64 = self.askTree.treeMinimum(key: self.askTree.root)
+            let thisReceiver: &{FungibleToken.Receiver} = getAccount(addr).getCapability(/public/fusdReceiver).borrow<&{FungibleToken.Receiver}>()!
+
             while _quantity > 0.0 && price != 0.0 {
-                if self.askOrders[price]?.amount != nil && self.askOrders[price]!.amount <= _quantity {
-                    owed[self.askOrders[price]!.maker] = Balance(
-                        flow: self.askOrders[price]!.amount * price,
-                        fusd: self.askOrders[price]!.amount
-                    )
-                    _quantity = _quantity - self.askOrders[price]!.amount
+                let askOrder: &Order? = &self.askOrders[price] as &Order?
+                let askReceiver: &{AdminPublic} = getAccount(askOrder!.admin.addr).getCapability(self.AdminPublicPath).borrow<&{AdminPublic}>()!
+
+                if askOrder?.amount != nil && askOrder!.amount <= _quantity {
+
+                    _quantity = _quantity - askOrder!.amount
                     price = self.askTree.next(target: price)
+
+                    askReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: price * askOrder!.amount))
+                    thisReceiver.deposit(from: <- askOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: askOrder!.amount))
+
                     self.askTree.remove(key: price)
-                    self.askOrders.remove(key: price)
-                } else {
-                    self.askOrders[price]!.changeAmount(amount: self.askOrders[price]!.amount - _quantity)
-                    owed[self.askOrders[price]!.maker] = Balance(
-                        flow: _quantity * price,
-                        fusd: _quantity
-                    )
+                    destroy self.askOrders.remove(key: price)
+                }
+                
+                else {
+                    askOrder!.changeAmount(amount: askOrder!.amount - _quantity)
+
+                    askReceiver.transferFlow(from: <- flowVaultRef.withdraw(amount: price * _quantity))
+                    thisReceiver.deposit(from: <- askOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: _quantity))
+
                     break
                 }
             }
         }
         else {
             var price: UFix64 = self.bidTree.treeMaximum(key: self.bidTree.root)
+            let thisReceiver: &{FungibleToken.Receiver} = getAccount(addr).getCapability(/public/flowTokenReceiver).borrow<&{FungibleToken.Receiver}>()!
+
             while _quantity > 0.0 && price != 0.0 {
-                if self.bidOrders[price]?.amount != nil && self.bidOrders[price]!.amount <= _quantity {
-                    owed[self.bidOrders[price]!.maker] = Balance(
-                        flow: self.bidOrders[price]!.amount * price,
-                        fusd: self.bidOrders[price]!.amount
-                    )
-                    _quantity = _quantity - self.bidOrders[price]!.amount
+                let bidOrder: &Order? = &self.bidOrders[price] as &Order?
+                let bidReceiver: &{AdminPublic} = getAccount(bidOrder!.admin.addr).getCapability(self.AdminPublicPath).borrow<&{AdminPublic}>()!
+
+                if bidOrder?.amount != nil && bidOrder!.amount <= _quantity {
+                    _quantity = _quantity - bidOrder!.amount
                     price = self.bidTree.prev(target: price)
+
+                    bidReceiver.transferFusd(from: <- fusdVaultRef.withdraw(amount: bidOrder!.amount))
+                    thisReceiver.deposit(from: <- bidOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: price * bidOrder!.amount))
+
                     self.bidTree.remove(key: price)
-                    self.bidOrders.remove(key: price)
-                } else {
-                    self.bidOrders[price]!.changeAmount(amount: self.bidOrders[price]!.amount - _quantity)
-                    owed[self.bidOrders[price]!.maker] = Balance(
-                        flow: _quantity * price,
-                        fusd: _quantity
-                    )
+                    destroy self.bidOrders.remove(key: price)
+                }
+                
+                else {
+                    bidOrder!.changeAmount(amount: bidOrder!.amount - _quantity)
+
+                    bidReceiver.transferFusd(from: <- fusdVaultRef.withdraw(amount: _quantity))
+                    thisReceiver.deposit(from: <- bidOrder!.admin.storageCapability.borrow()!.withdrawFUSD(amount: price * _quantity))
+
                     break
                 }
             }
         }
-        return owed
     }
 
     pub fun cancelOrder(price: UFix64, isBid: Bool): UFix64 {
         if isBid {
-            let receiveAmount = price * self.bidOrders[price]!.amount
+            let bidOrder: &Order? = &self.bidOrders[price] as &Order?
             self.bidTree.remove(key: price)
-            self.bidOrders.remove(key: price)
-            return receiveAmount
+            destroy self.bidOrders.remove(key: price)
+
+            return price * bidOrder!.amount
         }
+        
         else {
-            let receiveAmount = self.askOrders[price]!.amount
+            let askOrder: &Order? = &self.askOrders[price] as &Order?
+
             self.askTree.remove(key: price)
-            self.askOrders.remove(key: price)
-            return receiveAmount
+            destroy self.askOrders.remove(key: price)
+
+            return askOrder!.amount
         }
     }
 
