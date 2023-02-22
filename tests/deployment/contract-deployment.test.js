@@ -23,8 +23,8 @@ describe("Deployment", () => {
 
     test("Should deploy contract", async () => {
         await deployContract({ name: contractNames[0] })
-        const OrderBookV14 = await getContractAddress(contractNames[0])
-        expect(OrderBookV14).toBeDefined()
+        const OrderBookV16 = await getContractAddress(contractNames[0])
+        expect(OrderBookV16).toBeDefined()
     });
 
     afterEach(async () => {

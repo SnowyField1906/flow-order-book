@@ -14,7 +14,7 @@ export default async function cancelOrder(price, isBid) {
 }
 
 const CANCEL_ORDER = `
-import OrderBookV14 from 0xOrderBookV14
+import OrderBookV16 from 0xOrderBookV16
 import FlowFusdVaultV4 from 0xFlowFusdVaultV4
 import FungibleToken from 0xFungibleToken
 
@@ -24,7 +24,7 @@ transaction(price: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
         self.maker = signer.address
 
-        let receiveAmount = OrderBookV14.cancelOrder(price: price, isBid: isBid)
+        let receiveAmount = OrderBookV16.cancelOrder(price: price, isBid: isBid)
 
         if isBid {
             let userFlowVault = getAccount(self.maker).getCapability(/public/flowTokenReceiver)

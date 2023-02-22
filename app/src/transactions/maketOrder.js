@@ -1,21 +1,21 @@
 import * as fcl from "@onflow/fcl";
 
 export default async function marketOrder(quantity, isBid) {
-  return fcl.mutate({
-    cadence: MARKET_ORDER,
-    proposer: fcl.currentUser,
-    payer: fcl.currentUser,
-    authorizations: [fcl.currentUser],
-    args: (arg, t) => [
-      arg(quantity.toString(), t.UFix64),
-      arg(isBid, t.Bool),
-    ],
-    limit: 1000,
-  });
+    return fcl.mutate({
+        cadence: MARKET_ORDER,
+        proposer: fcl.currentUser,
+        payer: fcl.currentUser,
+        authorizations: [fcl.currentUser],
+        args: (arg, t) => [
+            arg(quantity.toString(), t.UFix64),
+            arg(isBid, t.Bool),
+        ],
+        limit: 1000,
+    });
 }
 
 const MARKET_ORDER = `
-import OrderBookV14 from 0xOrderBookV14
+import OrderBookV16 from 0xOrderBookV16
 import FlowFusdVaultV4 from 0xFlowFusdVaultV4
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
@@ -24,7 +24,7 @@ import FUSD from 0xFUSD
 transaction(quantity: UFix64, isBid: Bool) {
 
     prepare(signer: AuthAccount) {
-        let owed: {Address: OrderBookV14.Balance} = OrderBookV14.marketOrder(quantity: quantity, isBid: isBid)
+        let owed: {Address: OrderBookV16.Balance} = OrderBookV16.marketOrder(quantity: quantity, isBid: isBid)
 
         if isBid {
             let flowVaultRef = signer.borrow<&FUSD.Vault>(from: /storage/fusdVault)!

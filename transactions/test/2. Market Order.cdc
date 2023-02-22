@@ -1,4 +1,4 @@
-import OrderBookV14 from 0xOrderBookV14
+import OrderBookV16 from 0xOrderBookV16
 import FlowFusdVaultV4 from 0xFlowFusdVaultV4
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
@@ -10,7 +10,7 @@ transaction(quantity: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
         self.maker = signer.address
 
-        let owed: {Address: OrderBookV14.Balance} = OrderBookV14.marketOrder(quantity: quantity, isBid: isBid)
+        let owed: {Address: OrderBookV16.Balance} = OrderBookV16.marketOrder(quantity: quantity, isBid: isBid)
 
         if isBid {
             let flowVaultRef = signer.borrow<&FUSD.Vault>(from: /storage/fusdVault)!

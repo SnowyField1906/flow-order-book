@@ -1,4 +1,4 @@
-import OrderBookV14 from 0xOrderBookV14
+import OrderBookV16 from 0xOrderBookV16
 import OrderBookVaultV12 from 0xOrderBookVaultV12
 import FungibleToken from 0xFungibleToken
 
@@ -8,7 +8,7 @@ transaction(price: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
         self.maker = signer.address
 
-        let receiveAmount = OrderBookV14.cancelOrder(price: price, isBid: isBid)
+        let receiveAmount = OrderBookV16.cancelOrder(price: price, isBid: isBid)
 
         let contractVault = signer.borrow<&OrderBookVaultV12.Administrator>(from: OrderBookVaultV12.TokenStoragePath)!
 
