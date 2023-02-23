@@ -1,4 +1,4 @@
-import OrderBookV16 from 0xOrderBookV16
+import OrderBookV18 from 0xOrderBookV18
 import OrderBookVaultV12 from 0xOrderBookVaultV12
 import FungibleToken from 0xFungibleToken
 
@@ -6,24 +6,11 @@ transaction(price: UFix64, isBid: Bool) {
     let maker: Address
 
     prepare(signer: AuthAccount) {
-        self.maker = signer.address
+        let storageCapability: Capability<&OrderBookV18.Admin{OrderBookV18.AdminPrivate}> = signer.getCapability<&OrderBookV18.Admin{OrderBookV18.AdminPrivate}>(OrderBookV18.AdminCapabilityPath)
 
-        let receiveAmount = OrderBookV16.cancelOrder(price: price, isBid: isBid)
+        let listing = getAccount(0xOrderBookV18).getCapability<&OrderBookV18.Listing{OrderBookV18.ListingPublic}>(OrderBookV18.ListingPublicPath).borrow()!
 
-        let contractVault = signer.borrow<&OrderBookVaultV12.Administrator>(from: OrderBookVaultV12.TokenStoragePath)!
-
-        if isBid {
-            let userFlowVault = getAccount(self.maker).getCapability(/public/flowTokenReceiver)
-                .borrow<&{FungibleToken.Receiver}>()!
-            let contractFlowVault <- contractVault.withdrawFlow(amount: receiveAmount)
-            userFlowVault.deposit(from: <-contractFlowVault)
-        }
-        else {
-            let userFusdVault = getAccount(self.maker).getCapability(/public/fusdReceiver)
-                .borrow<&{FungibleToken.Receiver}>()!
-            let contractFusdVault <- contractVault.withdrawFusd(amount: receiveAmount)
-            userFusdVault.deposit(from: <-contractFusdVault)
-        }
+        listing.cancelOrder(price: price, isBid: isBid, storage: storageCapability)
     }
 
     execute {

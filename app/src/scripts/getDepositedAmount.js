@@ -10,12 +10,11 @@ export default async function getDepositedAmount(address) {
 }
 
 const USER_DEPOSITED = `
-import FlowFusdVaultV4 from 0xFlowFusdVaultV4
-import FungibleToken from 0xFungibleToken
-import FlowToken from 0xFlowToken
-import FUSD from 0xFUSD
+import OrderBookV18 from 0xOrderBookV18
 
 pub fun main(userAddress: Address) : {String: UFix64} {
-    return {"Flow": FlowFusdVaultV4.vaults[userAddress]?.flowBalance ?? 0.0, "FUSD": FlowFusdVaultV4.vaults[userAddress]?.fusdBalance ?? 0.0}
+    let admin = getAccount(userAddress).getCapability(OrderBookV18.AdminPublicPath)!.borrow<&OrderBookV18.Admin{OrderBookV18.AdminPublic}>()!
+
+    return {"Flow": admin.flowDeposited(), "FUSD": admin.fusdDeposited()}
 }
 `

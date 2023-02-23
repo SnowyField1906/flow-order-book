@@ -1,8 +1,5 @@
-import OrderBookVaultV12 from 0xOrderBookVaultV12
-import FungibleToken from 0xFungibleToken
-import FlowToken from 0xFlowToken
-import FUSD from 0xFUSD
+import OrderBookV18 from 0xOrderBookV18
 
 pub fun main() : {String: UFix64} {
-    return {"Flow": OrderBookVaultV12.flowVault.balance, "FUSD": OrderBookVaultV12.fusdVault.balance}
+    return {"Flow": OrderBookV18.flowSupply, "FUSD": OrderBookV18.fusdSupply}
 }

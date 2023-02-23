@@ -21,7 +21,7 @@ function Order({ id, isBid, address }) {
                 <p className="w-full my-auto text-white text-left font-bold text-lg">{id}</p>
                 <p className="w-full my-auto text-white text-right text-sm">{parseFloat(detail.amount)}</p>
             </div>
-            {detail.maker === address && <div onClick={() => cancelOrder(id, isBid)} className='pl-5 cursor-pointer'>Cancel</div>}
+            {detail.addr === address && <div onClick={() => cancelOrder(id, isBid)} className='pl-5 cursor-pointer'>Cancel</div>}
         </div>
     )
 

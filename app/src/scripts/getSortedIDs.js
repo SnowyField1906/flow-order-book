@@ -11,18 +11,19 @@ export default async function getSortedIDs(isBid) {
 
 
 const SORTED_IDS = `
-import OrderBookV16 from 0xOrderBookV16
+import OrderBookV18 from 0xOrderBookV18
 
 access(all) var keys: [UFix64] = []
-    
+access(all) let listing = getAccount(0xOrderBookV18).getCapability(OrderBookV18.ListingPublicPath).borrow<&{OrderBookV18.ListingPublic}>()!
+
 pub fun inorderAsk(key: UFix64?) {
     if (key == 0.0) {
         return;
     }
 
-    inorderAsk(key: OrderBookV16.askTree.nodes[key!]?.right)
+    inorderAsk(key: listing.askTree.nodes[key!]?.right)
     keys.append(key!)
-    inorderAsk(key: OrderBookV16.askTree.nodes[key!]?.left)
+    inorderAsk(key: listing.askTree.nodes[key!]?.left)
 }
 
 pub fun inorderBid(key: UFix64?) {
@@ -30,16 +31,16 @@ pub fun inorderBid(key: UFix64?) {
         return;
     }
 
-    inorderBid(key: OrderBookV16.bidTree.nodes[key!]?.right)
+    inorderBid(key: listing.bidTree.nodes[key!]?.right)
     keys.append(key!)
-    inorderBid(key: OrderBookV16.bidTree.nodes[key!]?.left)
+    inorderBid(key: listing.bidTree.nodes[key!]?.left)
 }
     
 pub fun main(isBid: Bool): [UFix64] {
     if isBid {
-        inorderBid(key: OrderBookV16.bidTree.root)
+        inorderBid(key: listing.bidTree.root)
     } else {
-        inorderAsk(key: OrderBookV16.askTree.root)
+        inorderAsk(key: listing.askTree.root)
     }
 
     return keys

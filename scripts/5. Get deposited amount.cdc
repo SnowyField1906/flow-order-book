@@ -1,10 +1,7 @@
-import OrderBookVaultV12 from 0xOrderBookVaultV12
-import FungibleToken from 0xFungibleToken
-import FlowToken from 0xFlowToken
-import FUSD from 0xFUSD
+import OrderBookV18 from 0xOrderBookV18
 
 pub fun main(userAddress: Address) : {String: UFix64} {
-    let tokenBundle = getAccount(userAddress).getCapability(OrderBookVaultV12.TokenPublicPath).borrow<&OrderBookVaultV12.Administrator>()!
+    let admin = getAccount(userAddress).getCapability(OrderBookV18.AdminPublicPath)!.borrow<&OrderBookV18.Admin{OrderBookV18.AdminPublic}>()!
 
-    return {"Flow": tokenBundle.getFlowBalance(), "FUSD": tokenBundle.getFusdBalance()}
+    return {"Flow": admin.flowDeposited(), "FUSD": admin.fusdDeposited()}
 }

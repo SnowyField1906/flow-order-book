@@ -6,21 +6,24 @@ export default async function setupAccount() {
         proposer: fcl.currentUser,
         payer: fcl.currentUser,
         authorizations: [fcl.currentUser],
+        limit: 200,
     });
 }
 
 const SETUP_ACCOUNT = `
-import OrderBookVaultV12 from 0xOrderBookVaultV12
+import OrderBookV18 from 0xOrderBookV18
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
 
 transaction {
     prepare(signer: AuthAccount) {
-        if signer.borrow<&OrderBookVaultV12.Administrator>(from: OrderBookVaultV12.TokenStoragePath) == nil {
-            signer.save(<-OrderBookVaultV12.createAdministrator(), to: OrderBookVaultV12.TokenStoragePath)
-            signer.link<&OrderBookVaultV12.Administrator>(OrderBookVaultV12.TokenPublicPath, target: OrderBookVaultV12.TokenStoragePath)
-        }
+        let flowReceiverCapability = signer.getCapability<&FlowToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)
+        let fusdReceiverCapability = signer.getCapability<&FUSD.Vault{FungibleToken.Receiver}>(/public/fusdReceiver)
+
+        signer.save(<-OrderBookV18.createAdmin(flowReceiverCapability: flowReceiverCapability, fusdReceiverCapability: fusdReceiverCapability), to: OrderBookV18.AdminStoragePath)
+        signer.link<&OrderBookV18.Admin{OrderBookV18.AdminPublic}>(OrderBookV18.AdminPublicPath, target: OrderBookV18.AdminStoragePath)
+        signer.link<&OrderBookV18.Admin{OrderBookV18.AdminPrivate}>(OrderBookV18.AdminCapabilityPath, target: OrderBookV18.AdminStoragePath)
 
         if signer.borrow<&FUSD.Vault>(from: /storage/fusdVault) == nil {
             signer.save(<-FUSD.createEmptyVault(), to: /storage/fusdVault)

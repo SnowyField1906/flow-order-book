@@ -1,4 +1,4 @@
-import OrderBookV16 from 0xOrderBookV16
+import OrderBookV18 from 0xOrderBookV18
 import FlowFusdVaultV4 from 0xFlowFusdVaultV4
 import FungibleToken from 0xFungibleToken
 
@@ -8,7 +8,7 @@ transaction(price: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
         self.maker = signer.address
 
-        let receiveAmount = OrderBookV16.cancelOrder(price: price, isBid: isBid)
+        let receiveAmount = OrderBookV18.cancelOrder(price: price, isBid: isBid)
 
         if isBid {
             let userFlowVault = getAccount(self.maker).getCapability(/public/flowTokenReceiver)

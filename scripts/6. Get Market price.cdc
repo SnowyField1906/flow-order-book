@@ -1,4 +1,4 @@
-import OrderBookV16 from 0xOrderBookV16
+import OrderBookV18 from 0xOrderBookV18
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
@@ -8,12 +8,12 @@ pub fun main(quantity: UFix64, isBid: Bool): UFix64 {
     var amount: UFix64 = 0.0
     
     if isBid {
-        var price: UFix64 = OrderBookV16.askTree.treeMinimum(key: OrderBookV16.askTree.root)
+        var price: UFix64 = OrderBookV18.askTree.treeMinimum(key: OrderBookV18.askTree.root)
         while _quantity > 0.0 && price != 0.0 {
-            if OrderBookV16.askOffers[price]?.amount != nil && OrderBookV16.askOffers[price]!.amount <= _quantity {
-                amount = amount + OrderBookV16.askOffers[price]!.amount * price
-                _quantity = _quantity - OrderBookV16.askOffers[price]!.amount
-                price = OrderBookV16.askTree.next(target: price)
+            if OrderBookV18.askOffers[price]?.amount != nil && OrderBookV18.askOffers[price]!.amount <= _quantity {
+                amount = amount + OrderBookV18.askOffers[price]!.amount * price
+                _quantity = _quantity - OrderBookV18.askOffers[price]!.amount
+                price = OrderBookV18.askTree.next(target: price)
             } else {
                 amount = amount + _quantity * price
                 break
@@ -21,12 +21,12 @@ pub fun main(quantity: UFix64, isBid: Bool): UFix64 {
         }
     }
     else {
-        var price: UFix64 = OrderBookV16.bidTree.treeMaximum(key: OrderBookV16.bidTree.root)
+        var price: UFix64 = OrderBookV18.bidTree.treeMaximum(key: OrderBookV18.bidTree.root)
         while _quantity > 0.0 && price != 0.0 {
-            if OrderBookV16.bidOffers[price]?.amount != nil && OrderBookV16.bidOffers[price]!.amount <= _quantity {
-                amount = amount + OrderBookV16.bidOffers[price]!.amount * price
-                _quantity = _quantity - OrderBookV16.bidOffers[price]!.amount
-                price = OrderBookV16.bidTree.prev(target: price)
+            if OrderBookV18.bidOffers[price]?.amount != nil && OrderBookV18.bidOffers[price]!.amount <= _quantity {
+                amount = amount + OrderBookV18.bidOffers[price]!.amount * price
+                _quantity = _quantity - OrderBookV18.bidOffers[price]!.amount
+                price = OrderBookV18.bidTree.prev(target: price)
             } else {
                 amount = amount + _quantity * price
                 break
