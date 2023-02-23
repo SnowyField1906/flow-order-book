@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/Flow-order-book/static/css/main.9259e0e7.css",
-    "main.js": "/Flow-order-book/static/js/main.674b1bf8.js",
+    "main.js": "/Flow-order-book/static/js/main.f8b7bb8d.js",
     "index.html": "/Flow-order-book/index.html",
     "main.9259e0e7.css.map": "/Flow-order-book/static/css/main.9259e0e7.css.map",
-    "main.674b1bf8.js.map": "/Flow-order-book/static/js/main.674b1bf8.js.map"
+    "main.f8b7bb8d.js.map": "/Flow-order-book/static/js/main.f8b7bb8d.js.map"
   },
   "entrypoints": [
     "static/css/main.9259e0e7.css",
-    "static/js/main.674b1bf8.js"
+    "static/js/main.f8b7bb8d.js"
   ]
 }
