@@ -11,10 +11,10 @@ export default async function getOrderDetail(id, isBid) {
 }
 
 const OFFER_DETAILS = `
-import OrderBookV18 from 0xOrderBookV18
+import OrderBookV21 from 0xOrderBookV21
 
-pub fun main(price: UFix64, isBid: Bool): OrderBookV18.OrderDetails {
-    let listing = getAccount(0xOrderBookV18).getCapability<&OrderBookV18.Listing{OrderBookV18.ListingPublic}>(OrderBookV18.ListingPublicPath).borrow()
+pub fun main(price: UFix64, isBid: Bool): OrderBookV21.OrderDetails? {
+    let listing = getAccount(0xOrderBookV21).getCapability<&OrderBookV21.Listing{OrderBookV21.ListingPublic}>(OrderBookV21.ListingPublicPath).borrow()
 
     return listing!.orderDetails(price: price, isBid: isBid)
 }

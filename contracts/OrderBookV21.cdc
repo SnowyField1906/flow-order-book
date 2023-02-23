@@ -4,7 +4,7 @@ import FUSD from 0xe223d8a629e49c68
 import FlowToken from 0x7e60df042a9c0868
 
 
-pub contract OrderBookV18 {
+pub contract OrderBookV21 {
     pub let AdminStoragePath: StoragePath
     pub let AdminCapabilityPath: CapabilityPath
     pub let AdminPublicPath: PublicPath
@@ -18,7 +18,8 @@ pub contract OrderBookV18 {
         pub let bidTree: OrderBookUtility.Tree
         pub let askTree: OrderBookUtility.Tree
         
-        pub fun orderDetails(price: UFix64, isBid: Bool): OrderDetails
+        pub fun orderDetails(price: UFix64, isBid: Bool): OrderDetails?
+        pub fun marketPrice(quantity: UFix64, isBid: Bool): UFix64
         pub fun limitOrder(addr: Address, price: UFix64, amount: UFix64, isBid: Bool,  storageCapability: Capability<&Admin{AdminPrivate}>, flowVaultRef: &FlowToken.Vault, fusdVaultRef: &FUSD.Vault)
         pub fun marketOrder(addr: Address, quantity: UFix64, isBid: Bool, storageCapability: Capability<&Admin{AdminPrivate}>, flowVaultRef: &FlowToken.Vault, fusdVaultRef: &FUSD.Vault)
         pub fun cancelOrder(price: UFix64, isBid: Bool, storageCapability: Capability<&Admin{AdminPrivate}>)
@@ -31,14 +32,57 @@ pub contract OrderBookV18 {
         access(contract) var bidOrders: @{UFix64: Order}
         access(contract) var askOrders: @{UFix64: Order}
 
-        pub fun orderDetails(price: UFix64, isBid: Bool): OrderDetails {
+        pub fun orderDetails(price: UFix64, isBid: Bool): OrderDetails? {
             if isBid {
                 let order: &Order? = &self.bidOrders[price] as &Order?
-                return order!._details()
+                return order?._details()
             } else {
                 let order: &Order? = &self.askOrders[price] as &Order?
-                return order!._details()
+                return order?._details()
             }
+        }
+
+        pub fun marketPrice(quantity: UFix64, isBid: Bool): UFix64 {
+            var _quantity: UFix64 = quantity
+            var amount = 0.0
+
+            if isBid {
+                var price: UFix64 = self.askTree.treeMinimum(key: self.askTree.root)
+
+                while _quantity > 0.0 && price != 0.0 {
+                    let askOrder: &Order? = &self.askOrders[price] as &Order?
+
+                    if askOrder?.amount != nil && askOrder!.amount <= _quantity {
+                        _quantity = _quantity - askOrder!.amount
+                        amount = amount + askOrder!.amount * price
+                        price = self.askTree.next(target: price)
+                    }
+                    
+                    else {
+                        amount = amount + _quantity * price
+                        break
+                    }
+                }
+            }
+            else {
+                var price: UFix64 = self.bidTree.treeMaximum(key: self.bidTree.root)
+
+                while _quantity > 0.0 && price != 0.0 {
+                    let bidOrder: &Order? = &self.bidOrders[price] as &Order?
+
+                    if bidOrder?.amount != nil && bidOrder!.amount <= _quantity {
+                        _quantity = _quantity - bidOrder!.amount
+                        amount = amount + bidOrder!.amount * price
+                        price = self.bidTree.prev(target: price)
+                    }
+                    
+                    else {
+                        amount = amount + _quantity * price
+                        break
+                    }
+                }
+            }
+            return amount
         }
 
         pub fun limitOrder(addr: Address, price: UFix64, amount: UFix64, isBid: Bool, storageCapability: Capability<&Admin{AdminPrivate}>, flowVaultRef: &FlowToken.Vault, fusdVaultRef: &FUSD.Vault) {
@@ -60,7 +104,7 @@ pub contract OrderBookV18 {
                 /* exists a matching ask order */
                 else {
                     let askOffer: &Order? = &self.askOrders[price] as &Order?
-                    let askReceiver: &{AdminPublic} = getAccount(askOffer!.admin.addr).getCapability(OrderBookV18.AdminPublicPath).borrow<&{AdminPublic}>()!
+                    let askReceiver: &{AdminPublic} = getAccount(askOffer!.admin.addr).getCapability(OrderBookV21.AdminPublicPath).borrow<&{AdminPublic}>()!
                     
                     /* ask order has enough FUSD amount for this order */
                     if askOffer!.amount > amount {
@@ -129,7 +173,7 @@ pub contract OrderBookV18 {
                 /* exists a matching bid order */ 
                 else {
                     let bidOrder: &Order? = &self.bidOrders[price] as &Order?
-                    let bidReceiver: &{AdminPublic} = getAccount(bidOrder!.admin.addr).getCapability(OrderBookV18.AdminPublicPath).borrow<&{AdminPublic}>()!
+                    let bidReceiver: &{AdminPublic} = getAccount(bidOrder!.admin.addr).getCapability(OrderBookV21.AdminPublicPath).borrow<&{AdminPublic}>()!
 
                     /* bid order has enough Flow amount for this order */
                     if bidOrder!.amount > amount {
@@ -150,8 +194,8 @@ pub contract OrderBookV18 {
                         if bidOrder!.amount < amount {
 
                             // (1): add this order with decreased amount
-                            self.bidOrders[price] <-! create Order(amount: amount - bidOrder!.amount, addr: addr, storageCapability: storageCapability)
-                            self.bidTree.insert(key: price)
+                            self.askOrders[price] <-! create Order(amount: amount - bidOrder!.amount, addr: addr, storageCapability: storageCapability)
+                            self.askTree.insert(key: price)
 
                             // (2): deposit FUSD to contract
                             storageCapability.borrow()!._depositAdminFusd(from: <- fusdVaultRef.withdraw(amount: amount - bidOrder!.amount))
@@ -189,7 +233,7 @@ pub contract OrderBookV18 {
 
                 while _quantity > 0.0 && price != 0.0 {
                     let askOrder: &Order? = &self.askOrders[price] as &Order?
-                    let askReceiver: &{AdminPublic} = getAccount(askOrder!.admin.addr).getCapability(OrderBookV18.AdminPublicPath).borrow<&{AdminPublic}>()!
+                    let askReceiver: &{AdminPublic} = getAccount(askOrder!.admin.addr).getCapability(OrderBookV21.AdminPublicPath).borrow<&{AdminPublic}>()!
 
                     if askOrder?.amount != nil && askOrder!.amount <= _quantity {
 
@@ -218,7 +262,7 @@ pub contract OrderBookV18 {
 
                 while _quantity > 0.0 && price != 0.0 {
                     let bidOrder: &Order? = &self.bidOrders[price] as &Order?
-                    let bidReceiver: &{AdminPublic} = getAccount(bidOrder!.admin.addr).getCapability(OrderBookV18.AdminPublicPath).borrow<&{AdminPublic}>()!
+                    let bidReceiver: &{AdminPublic} = getAccount(bidOrder!.admin.addr).getCapability(OrderBookV21.AdminPublicPath).borrow<&{AdminPublic}>()!
 
                     if bidOrder?.amount != nil && bidOrder!.amount <= _quantity {
                         _quantity = _quantity - bidOrder!.amount
@@ -351,19 +395,19 @@ pub contract OrderBookV18 {
         }
 
         access(contract) fun _receiveAdminFlow(from: @FungibleToken.Vault) {
-            OrderBookV18.flowSupply = OrderBookV18.flowSupply - from.balance
+            OrderBookV21.flowSupply = OrderBookV21.flowSupply - from.balance
             self.flowReceiverCapability.borrow()!.deposit(from: <-from)
         }
         access(contract) fun _receiveAdminFusd(from: @FungibleToken.Vault) {
-            OrderBookV18.fusdSupply = OrderBookV18.fusdSupply - from.balance
+            OrderBookV21.fusdSupply = OrderBookV21.fusdSupply - from.balance
             self.fusdReceiverCapability.borrow()!.deposit(from: <-from)
         }
         access(contract) fun _depositAdminFlow(from: @FungibleToken.Vault) {
-            OrderBookV18.flowSupply = OrderBookV18.flowSupply + from.balance
+            OrderBookV21.flowSupply = OrderBookV21.flowSupply + from.balance
             self.flowVault.deposit(from: <-from)
         }
         access(contract) fun _depositAdminFusd(from: @FungibleToken.Vault) {
-            OrderBookV18.fusdSupply = OrderBookV18.fusdSupply + from.balance
+            OrderBookV21.fusdSupply = OrderBookV21.fusdSupply + from.balance
             self.fusdVault.deposit(from: <-from)
         }
         access(contract) fun _withdrawAdminFlow(amount: UFix64): @FungibleToken.Vault {
@@ -392,11 +436,11 @@ pub contract OrderBookV18 {
     }
 
     init() {
-        self.AdminStoragePath = /storage/OrderBookV18Admin
-        self.AdminCapabilityPath = /private/OrderBookV18Admin
-        self.AdminPublicPath = /public/OrderBookV18Amin
-        self.ListingStoragePath = /storage/OrderBookV18Listing
-        self.ListingPublicPath = /public/OrderBookV18Listing
+        self.AdminStoragePath = /storage/OrderBookV21Admin
+        self.AdminCapabilityPath = /private/OrderBookV21Admin
+        self.AdminPublicPath = /public/OrderBookV21Amin
+        self.ListingStoragePath = /storage/OrderBookV21Listing
+        self.ListingPublicPath = /public/OrderBookV21Listing
 
         self.account.save(<- create Listing(), to: self.ListingStoragePath)
         self.account.link<&Listing{ListingPublic}>(self.ListingPublicPath, target: self.ListingStoragePath)

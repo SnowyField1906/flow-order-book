@@ -7,9 +7,9 @@ export default async function getContractBalance() {
 }
 
 const CONTRACT_BALANCE = `
-import OrderBookV18 from 0xOrderBookV18
+import OrderBookV21 from 0xOrderBookV21
 
 pub fun main() : {String: UFix64} {
-    return {"Flow": OrderBookV18.flowSupply, "FUSD": OrderBookV18.fusdSupply}
+    return {"Flow": OrderBookV21.flowSupply, "FUSD": OrderBookV21.fusdSupply}
 }
 `

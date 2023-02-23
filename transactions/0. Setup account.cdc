@@ -1,4 +1,4 @@
-import OrderBookV18 from 0xOrderBookV18
+import OrderBookV21 from 0xOrderBookV21
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
@@ -8,9 +8,9 @@ transaction {
         let flowReceiverCapability = signer.getCapability<&FlowToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)
         let fusdReceiverCapability = signer.getCapability<&FUSD.Vault{FungibleToken.Receiver}>(/public/fusdReceiver)
 
-        signer.save(<-OrderBookV18.createAdmin(flowReceiverCapability: flowReceiverCapability, fusdReceiverCapability: fusdReceiverCapability), to: OrderBookV18.AdminStoragePath)
-        signer.link<&OrderBookV18.Admin{OrderBookV18.AdminPublic}>(OrderBookV18.AdminPublicPath, target: OrderBookV18.AdminStoragePath)
-        signer.link<&OrderBookV18.Admin{OrderBookV18.AdminPrivate}>(OrderBookV18.AdminCapabilityPath, target: OrderBookV18.AdminStoragePath)
+        signer.save(<-OrderBookV21.createAdmin(flowReceiverCapability: flowReceiverCapability, fusdReceiverCapability: fusdReceiverCapability), to: OrderBookV21.AdminStoragePath)
+        signer.link<&OrderBookV21.Admin{OrderBookV21.AdminPublic}>(OrderBookV21.AdminPublicPath, target: OrderBookV21.AdminStoragePath)
+        signer.link<&OrderBookV21.Admin{OrderBookV21.AdminPrivate}>(OrderBookV21.AdminCapabilityPath, target: OrderBookV21.AdminStoragePath)
 
         if signer.borrow<&FUSD.Vault>(from: /storage/fusdVault) == nil {
             signer.save(<-FUSD.createEmptyVault(), to: /storage/fusdVault)

@@ -246,7 +246,7 @@ pub contract OrderBookUtility {
                 _key = self.nodes[_key]!.right
             }
 
-            return key
+            return _key
         }
 
 
@@ -315,7 +315,7 @@ pub contract OrderBookUtility {
             }
         }
 
-        pub fun _insertFixup(key: UFix64) {
+        priv fun _insertFixup(key: UFix64) {
             var _key: UFix64 = key
             var cursor: UFix64 = self.EMPTY
             while _key != self.root  && self.nodes[self.nodes[_key]?.parent!]?.red! {
@@ -361,7 +361,7 @@ pub contract OrderBookUtility {
             self.nodes[self.root]?.changeColor(red: false)
         }
 
-        pub fun _removeFixup(key: UFix64) {
+        priv fun _removeFixup(key: UFix64) {
             log(key)
             var _key: UFix64 = key
             var cursor: UFix64 = self.EMPTY

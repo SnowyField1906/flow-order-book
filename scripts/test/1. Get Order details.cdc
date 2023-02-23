@@ -1,8 +1,8 @@
-import OrderBookV18 from 0xOrderBookV18
+import OrderBookV21 from 0xOrderBookV21
 
-pub fun main(price: UFix64, isBid: Bool): OrderBookV18.Offer? {
+pub fun main(price: UFix64, isBid: Bool): OrderBookV21.Offer? {
     if isBid {
-        return OrderBookV18.bidOffers[price]
+        return OrderBookV21.bidOffers[price]
     }
-    return OrderBookV18.askOffers[price]
+    return OrderBookV21.askOffers[price]
 }

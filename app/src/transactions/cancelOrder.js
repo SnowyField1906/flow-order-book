@@ -14,19 +14,17 @@ export default async function cancelOrder(price, isBid) {
 }
 
 const CANCEL_ORDER = `
-import OrderBookV18 from 0xOrderBookV18
+import OrderBookV21 from 0xOrderBookV21
 import OrderBookVaultV12 from 0xOrderBookVaultV12
 import FungibleToken from 0xFungibleToken
 
 transaction(price: UFix64, isBid: Bool) {
-    let maker: Address
-
     prepare(signer: AuthAccount) {
-        let storageCapability: Capability<&OrderBookV18.Admin{OrderBookV18.AdminPrivate}> = signer.getCapability<&OrderBookV18.Admin{OrderBookV18.AdminPrivate}>(OrderBookV18.AdminCapabilityPath)
+        let storageCapability: Capability<&OrderBookV21.Admin{OrderBookV21.AdminPrivate}> = signer.getCapability<&OrderBookV21.Admin{OrderBookV21.AdminPrivate}>(OrderBookV21.AdminCapabilityPath)
 
-        let listing = getAccount(0xOrderBookV18).getCapability<&OrderBookV18.Listing{OrderBookV18.ListingPublic}>(OrderBookV18.ListingPublicPath).borrow()!
+        let listing = getAccount(0xOrderBookV21).getCapability<&OrderBookV21.Listing{OrderBookV21.ListingPublic}>(OrderBookV21.ListingPublicPath).borrow()!
 
-        listing.cancelOrder(price: price, isBid: isBid, storage: storageCapability)
+        listing.cancelOrder(price: price, isBid: isBid, storageCapability: storageCapability)
     }
 
     execute {

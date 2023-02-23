@@ -13,7 +13,18 @@ function App() {
   const [bidIDs, setBidISs] = useState([]);
   const [askIDs, setAskIDs] = useState([]);
 
-  console.log(bidIDs, askIDs)
+  fcl.query({
+    cadence: `
+      import OrderBookV21 from 0xOrderBookV21
+      
+      pub fun main(): [UFix64] {
+          let listing = getAccount(0xOrderBookV21).getCapability<&OrderBookV21.Listing{OrderBookV21.ListingPublic}>(OrderBookV21.ListingPublicPath).borrow()
+          return [listing!.askTree.treeMinimum(key: listing!.askTree.root), listing!.bidTree.treeMaximum(key: listing!.bidTree.root)]
+      }
+      `,
+  }).then((res) => {
+    console.log(res);
+  });
 
   const [address, setAddress] = useState("");
 

@@ -1,4 +1,4 @@
-pub contract OrderBookV18 {
+pub contract OrderBookV21 {
     
     pub let offers:       @{UInt32: Offer}
     pub let ids:           {UInt32: Node}
@@ -249,8 +249,8 @@ pub contract OrderBookV18 {
     }
 
     pub fun comparePrice(_ a: UInt32, _ b: UInt32): Int16 {
-        let offer0: &OrderBookV18.Offer? = &self.offers[a] as &Offer?
-        let offer1: &OrderBookV18.Offer? = &self.offers[b] as &Offer?
+        let offer0: &OrderBookV21.Offer? = &self.offers[a] as &Offer?
+        let offer1: &OrderBookV21.Offer? = &self.offers[b] as &Offer?
 
         // log("comparing: ".concat(a.toString()).concat(" and ").concat(b.toString()))
 
@@ -274,12 +274,12 @@ pub contract OrderBookV18 {
     }
 
     pub fun inorderTraversal(_ current: UInt32) {
-        if OrderBookV18.ids[current] == nil {
+        if OrderBookV21.ids[current] == nil {
             return
         }
-        self.inorderTraversal(OrderBookV18.ids[current]!.left)
+        self.inorderTraversal(OrderBookV21.ids[current]!.left)
         log(current)
-        self.inorderTraversal(OrderBookV18.ids[current]!.right)
+        self.inorderTraversal(OrderBookV21.ids[current]!.right)
     }
 }
  

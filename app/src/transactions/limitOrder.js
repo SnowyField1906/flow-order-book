@@ -16,18 +16,18 @@ export default async function limitOrder(price, amount, isBid) {
 }
 
 const LIMIT_ORDER = `
-import OrderBookV18 from 0xOrderBookV18
+import OrderBookV21 from 0xOrderBookV21
 import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 import FUSD from 0xFUSD
 
 transaction(price: UFix64, amount: UFix64, isBid: Bool) {
     prepare(signer: AuthAccount) {
-        let storageCapability: Capability<&OrderBookV18.Admin{OrderBookV18.AdminPrivate}> = signer.getCapability<&OrderBookV18.Admin{OrderBookV18.AdminPrivate}>(OrderBookV18.AdminCapabilityPath)
+        let storageCapability: Capability<&OrderBookV21.Admin{OrderBookV21.AdminPrivate}> = signer.getCapability<&OrderBookV21.Admin{OrderBookV21.AdminPrivate}>(OrderBookV21.AdminCapabilityPath)
         let flowVaultRef = signer.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)!
         let fusdVaultRef = signer.borrow<&FUSD.Vault>(from: /storage/fusdVault)!
 
-        let listing = getAccount(0xOrderBookV18).getCapability<&OrderBookV18.Listing{OrderBookV18.ListingPublic}>(OrderBookV18.ListingPublicPath).borrow()!
+        let listing = getAccount(0xOrderBookV21).getCapability<&OrderBookV21.Listing{OrderBookV21.ListingPublic}>(OrderBookV21.ListingPublicPath).borrow()!
 
         listing.limitOrder(addr: signer.address, price: price, amount: amount, isBid: isBid, storageCapability: storageCapability, flowVaultRef: flowVaultRef, fusdVaultRef: fusdVaultRef)
     }

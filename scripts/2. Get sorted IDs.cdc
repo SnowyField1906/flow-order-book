@@ -1,7 +1,7 @@
-import OrderBookV18 from 0xOrderBookV18
+import OrderBookV21 from 0xOrderBookV21
 
 access(all) var keys: [UFix64] = []
-access(all) let listing = getAccount(0xOrderBookV18).getCapability(OrderBookV18.ListingPublicPath).borrow<&{OrderBookV18.ListingPublic}>()!
+access(all) let listing = getAccount(0xOrderBookV21).getCapability(OrderBookV21.ListingPublicPath).borrow<&{OrderBookV21.ListingPublic}>()!
 
 pub fun inorderAsk(key: UFix64?) {
     if (key == 0.0) {
